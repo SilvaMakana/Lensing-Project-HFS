@@ -195,17 +195,18 @@ PSetLin = PowerSpectrumMultiZ(name_base,name_endLin,n_z,k_min,k_max,n_k)
 #for i in range(0,3):
 #	for j in range(0,10):
 #		print(i,j,PSetNL.P_interp(i,j))
+
+#defining non-linear k scale (h Mpc^-1) from arXiv:1111.4477v2
 def scale_nonlin(z,k):
 	return k**3 * PSetLin.P_interp(z,k)/(2*np.pi**2) - 1
 def k_nonlin(z):
 	return optimize.root_scalar(lambda k: scale_nonlin(z,k),bracket=[0,33],method ='brentq')
 
-print(k_nonlin(1.5))
+#print(k_nonlin(1.5))
+def q_nonlin(z,k):
+	return k/k_nonlin(z)
 
-
-sys.exit()
-
-omega_8 = 0.9
+#defining constants for parameter functions from arXiv:1111.4477v2
 a1 = 0.25
 a2 = 3.5
 a3 = 2
@@ -213,8 +214,9 @@ a4 = 1
 a5 = 2
 a6 = -0.2
 
+#defining Window function for sigma_8
 R = 8.0 #in units of h^-1 MpC
-def window(k): #Window function for building sigma_8
+def window(k):
 	return 3/(R**3)*(np.sin(k*R) - k*R*np.cos(k*R))/k**3
 
 
@@ -230,20 +232,18 @@ def sigma_8(z,kstart,kend,n): #Sigma_8 cosmological function of redshift, z
 			#print('{:4d} {:11.5e} {:11.5e} {:11.5e} {:11.5e}'.format(i,kmid,PSetLin.P_interp(z,kmid)[0,0],window(kmid),Ai))
 	return np.sqrt(Ai/(2*np.pi**2)*delta_k)
 
-def q_nonlin(z,k):
-	return k/k_nonlin(z)
-
+#defining parameter functions from arXiv:1111.4477v2
 def Q3(z,k):
 	return (4 - 2**spectral_n(z,k))/(1 + 2**(spectral_n(z,k) + 1))
-def a(z,k):
-	return (1 + sigma_8**a6 * (0.7*Q3(z,k))**0.5 * (q_nonlin(z,k)*a1)**(spectral_n(z,k) + a2))/ (1 + (q_nonlin(z,k)*a1)**(spectral_n(z,k) + a2))
+def a(z,k,kstart,kend,n):
+	return (1 + sigma_8(z,kstart,kend,n)**a6 * (0.7*Q3(z,k))**0.5 * (q_nonlin(z,k)*a1)**(spectral_n(z,k) + a2))/ (1 + (q_nonlin(z,k)*a1)**(spectral_n(z,k) + a2))
 def b(z,k):
 	return (1 + 0.2*a3*(spectral_n(z,k)+3)*q_nonlin(z,k)**(spectral_n(z,k)+3))/(1 + q_nonlin(z,k)**(spectral_n(z,k)+3.5))
 def c(z,k):
 	return (1 + 4.5*a4/((1.5 + (spectral_n(z,k) +3)**4)*(q_nonlin(z,k)*a5)**(spectral_n(z,k) +3)))/(1 + (q_nonlin(z,k)*a5)**(spectral_n(z,k) +3.5))
 
 def F(z,k1,k2):
-	
+	return (5/7*a(z1,k1)*a(z2,k2)+1/2*cos12*(k1/k2+k2/k1)*b(z1,k1)*b(z2,k2)+2/7*cos12**2*c(z1,k1)*c(z2,k2))
 
 #print(PSetNL.spectral_n(0.3,10))
 #plt.semilogx(PSetNL.k_array,PSetNL.spectral_n(0.3,PSetNL.k_array).T)
