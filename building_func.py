@@ -243,7 +243,7 @@ def c(z,k):
 	return (1 + 4.5*a4/((1.5 + (spectral_n(z,k) +3)**4)*(q_nonlin(z,k)*a5)**(spectral_n(z,k) +3)))/(1 + (q_nonlin(z,k)*a5)**(spectral_n(z,k) +3.5))
 
 def F(z,k1,k2):
-	return (5/7*a(z1,k1)*a(z2,k2)+1/2*cos12*(k1/k2+k2/k1)*b(z1,k1)*b(z2,k2)+2/7*cos12**2*c(z1,k1)*c(z2,k2))
+	return (5/7*a(z,k1)*a(z,k2)+1/2*cos12*(k1/k2+k2/k1)*b(z,k1)*b(z,k2)+2/7*cos12**2*c(z,k1)*c(z,k2))
 
 #print(PSetNL.spectral_n(0.3,10))
 #plt.semilogx(PSetNL.k_array,PSetNL.spectral_n(0.3,PSetNL.k_array).T)
