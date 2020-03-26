@@ -253,4 +253,4 @@ def F(z,k1,k2):
 #plt.semilogx(PSetNL.k_array,PSetNL.spectral_n(0.3,PSetNL.k_array).T)
 #plt.semilogx(PSetLin.k_array,PSetLin.spectral_n(0.3,PSetLin.k_array).T)
 #plt.show()
-
+#made this change to see if I can git add and commit from terminal
