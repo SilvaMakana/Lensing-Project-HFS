@@ -246,7 +246,12 @@ def perturb_b(z,k):
 def perturb_c(z,k):
 	return (1 + 4.5*a4/((1.5 + (spectral_n(z,k) +3)**4)*(q_nonlin(z,k)*a5)**(spectral_n(z,k) +3)))/(1 + (q_nonlin(z,k)*a5)**(spectral_n(z,k) +3.5))
 
-def perturb_F(z,k1,k2):
+def perturb_F(z,kTriangle,i):
+	k1 = kTriangle.k1; k2 = kTriangle.k2; cos12 = kTriangle.cos12
+	if i==1:
+		k1 = kTriangle.k2; k2 = kTriangle.k3; cos12 = kTriangle.cos23
+	if i==2:
+		k1 = kTriangle.k3; k2 = kTriangle.k1; cos12 = kTriangle.cos13
 	return (5/7*pertrub_a(z,k1)*perturb_a(z,k2)+1/2*cos12*(k1/k2+k2/k1)*perturb_b(z,k1)*perturb_b(z,k2)+2/7*cos12**2*perturb_c(z,k1)*perturb_c(z,k2))
 
 #print(PSetNL.spectral_n(0.3,10))
