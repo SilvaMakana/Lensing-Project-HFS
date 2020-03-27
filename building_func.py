@@ -239,19 +239,18 @@ def sigma_8(z,kstart,kend,n): #Sigma_8 cosmological function of redshift, z
 #defining parameter functions from arXiv:1111.4477v2
 def Q3(z,k):
 	return (4 - 2**spectral_n(z,k))/(1 + 2**(spectral_n(z,k) + 1))
-def perturb_ a(z,k,kstart,kend,n):
+def perturb_a(z,k,kstart,kend,n):
 	return (1 + sigma_8(z,kstart,kend,n)**a6 * (0.7*Q3(z,k))**0.5 * (q_nonlin(z,k)*a1)**(spectral_n(z,k) + a2))/ (1 + (q_nonlin(z,k)*a1)**(spectral_n(z,k) + a2))
 def perturb_b(z,k):
 	return (1 + 0.2*a3*(spectral_n(z,k)+3)*q_nonlin(z,k)**(spectral_n(z,k)+3))/(1 + q_nonlin(z,k)**(spectral_n(z,k)+3.5))
 def perturb_c(z,k):
 	return (1 + 4.5*a4/((1.5 + (spectral_n(z,k) +3)**4)*(q_nonlin(z,k)*a5)**(spectral_n(z,k) +3)))/(1 + (q_nonlin(z,k)*a5)**(spectral_n(z,k) +3.5))
 
-def perturb_ F(z,k1,k2):
+def perturb_F(z,k1,k2):
 	return (5/7*pertrub_a(z,k1)*perturb_a(z,k2)+1/2*cos12*(k1/k2+k2/k1)*perturb_b(z,k1)*perturb_b(z,k2)+2/7*cos12**2*perturb_c(z,k1)*perturb_c(z,k2))
 
 #print(PSetNL.spectral_n(0.3,10))
 #plt.semilogx(PSetNL.k_array,PSetNL.spectral_n(0.3,PSetNL.k_array).T)
 #plt.semilogx(PSetLin.k_array,PSetLin.spectral_n(0.3,PSetLin.k_array).T)
 #plt.show()
-#made this change to see if I can git add and commit from terminal
-#another change made
+
