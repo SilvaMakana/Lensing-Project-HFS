@@ -207,7 +207,7 @@ PSetLin = PowerSpectrumMultiZ(name_base,name_endLin,n_z,k_min,k_max,n_k)
 def scale_nonlin(z,k):
 	return k**3 * PSetLin.P_interp(z,k)/(2*np.pi**2) - 1
 def k_nonlin(z):
-	return optimize.root_scalar(lambda k: scale_nonlin(z,k),bracket=[0,33],method ='brentq')
+	return optimize.root_scalar(lambda k: scale_nonlin(z,k),bracket=[kstart,kend],method ='brentq')
 
 #print(k_nonlin(1.5))
 def q_nonlin(z,k):
@@ -260,7 +260,11 @@ def perturb_F(z,myTriangle,i):
 z=2.0
 tri = kTriangle(3,4,np.pi/2)
 x = perturb_F(z,tri,0)
-print(x)
+
+def B_matterspec(z,myTriangle):
+	return(2*perturb_F(z,myTriangle,0)*PSetNL.P_interp(z,myTriangle.k1)*PSetNL.P_interp(z,myTriangle.k2) + 2*perturb_F(z,myTriangle,1)**PSetNL.P_interp(z,myTriangle.k1)*PSetNL.P_interp(z,myTriangle.k2) + 2*perturb_F(z,myTriangle,2)**PSetNL.P_interp(z,myTriangle.k1)*PSetNL.P_interp(z,myTriangle.k2))
+print(B_matterspec(z,tri))
+
 #print(PSetNL.spectral_n(0.3,10))
 #plt.semilogx(PSetNL.k_array,PSetNL.spectral_n(0.3,PSetNL.k_array).T)
 #plt.semilogx(PSetLin.k_array,PSetLin.spectral_n(0.3,PSetLin.k_array).T)
