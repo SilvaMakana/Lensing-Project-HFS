@@ -3,7 +3,6 @@ import numpy as np
 from scipy import optimize
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp2d, interp1d,InterpolatedUnivariateSpline,RectBivariateSpline
-z=2.0
 kstart = 1.045e-5
 kend = 33.308
 n=10000
@@ -212,7 +211,7 @@ def k_nonlin(z):
 
 #print(k_nonlin(1.5))
 def q_nonlin(z,k):
-	return k/k_nonlin(z)
+	return k/k_nonlin(z).root
 
 #defining constants for parameter functions from arXiv:1111.4477v2
 a1 = 0.25
@@ -258,6 +257,7 @@ def perturb_F(z,myTriangle,i):
 		k1 = myTriangle.k3; k2 = myTriangle.k1; cos12 = myTriangle.cos13
 	return (5/7*perturb_a(z,k1)*perturb_a(z,k2)+1/2*cos12*(k1/k2+k2/k1)*perturb_b(z,k1)*perturb_b(z,k2)+2/7*cos12**2*perturb_c(z,k1)*perturb_c(z,k2))
 
+z=2.0
 tri = kTriangle(3,4,np.pi/2)
 x = perturb_F(z,tri,0)
 print(x)
