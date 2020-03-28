@@ -3,6 +3,10 @@ import numpy as np
 from scipy import optimize
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp2d, interp1d,InterpolatedUnivariateSpline,RectBivariateSpline
+z=2.0
+kstart = 1.045e-5
+kend = 33.308
+n=10000
 
 #start = 0
 #end = 10
@@ -238,22 +242,25 @@ def sigma_8(z,kstart,kend,n): #Sigma_8 cosmological function of redshift, z
 
 #defining parameter functions from arXiv:1111.4477v2
 def Q3(z,k):
-	return (4 - 2**spectral_n(z,k))/(1 + 2**(spectral_n(z,k) + 1))
-def perturb_a(z,k,kstart,kend,n):
-	return (1 + sigma_8(z,kstart,kend,n)**a6 * (0.7*Q3(z,k))**0.5 * (q_nonlin(z,k)*a1)**(spectral_n(z,k) + a2))/ (1 + (q_nonlin(z,k)*a1)**(spectral_n(z,k) + a2))
+	return (4 - 2**PSetNL.spectral_n(z,k))/(1 + 2**(PSetNL.spectral_n(z,k) + 1))
+def perturb_a(z,k):
+	return (1 + sigma_8(z,kstart,kend,n)**a6 * (0.7*Q3(z,k))**0.5 * (q_nonlin(z,k)*a1)**(PSetNL.spectral_n(z,k) + a2))/ (1 + (q_nonlin(z,k)*a1)**(PSetNL.spectral_n(z,k) + a2))
 def perturb_b(z,k):
-	return (1 + 0.2*a3*(spectral_n(z,k)+3)*q_nonlin(z,k)**(spectral_n(z,k)+3))/(1 + q_nonlin(z,k)**(spectral_n(z,k)+3.5))
+	return (1 + 0.2*a3*(PSetNL.spectral_n(z,k)+3)*q_nonlin(z,k)**(PSetNL.spectral_n(z,k)+3))/(1 + q_nonlin(z,k)**(PSetNL.spectral_n(z,k)+3.5))
 def perturb_c(z,k):
-	return (1 + 4.5*a4/((1.5 + (spectral_n(z,k) +3)**4)*(q_nonlin(z,k)*a5)**(spectral_n(z,k) +3)))/(1 + (q_nonlin(z,k)*a5)**(spectral_n(z,k) +3.5))
+	return (1 + 4.5*a4/((1.5 + (PSetNL.spectral_n(z,k) +3)**4)*(q_nonlin(z,k)*a5)**(PSetNL.spectral_n(z,k) +3)))/(1 + (q_nonlin(z,k)*a5)**(PSetNL.spectral_n(z,k) +3.5))
 
-def perturb_F(z,kTriangle(3,4,1.5708),i):
-	k1 = kTriangle.k1; k2 = kTriangle.k2; cos12 = kTriangle.cos12
+def perturb_F(z,myTriangle,i):
+	k1 = myTriangle.k1; k2 = myTriangle.k2; cos12 = myTriangle.cos12
 	if i==1:
-		k1 = kTriangle.k2; k2 = kTriangle.k3; cos12 = kTriangle.cos23
+		k1 = myTriangle.k2; k2 = myTriangle.k3; cos12 = myTriangle.cos23
 	if i==2:
-		k1 = kTriangle.k3; k2 = kTriangle.k1; cos12 = kTriangle.cos13
-	return (5/7*pertrub_a(z,k1)*perturb_a(z,k2)+1/2*cos12*(k1/k2+k2/k1)*perturb_b(z,k1)*perturb_b(z,k2)+2/7*cos12**2*perturb_c(z,k1)*perturb_c(z,k2))
+		k1 = myTriangle.k3; k2 = myTriangle.k1; cos12 = myTriangle.cos13
+	return (5/7*perturb_a(z,k1)*perturb_a(z,k2)+1/2*cos12*(k1/k2+k2/k1)*perturb_b(z,k1)*perturb_b(z,k2)+2/7*cos12**2*perturb_c(z,k1)*perturb_c(z,k2))
 
+tri = kTriangle(3,4,np.pi/2)
+x = perturb_F(z,tri,0)
+print(x)
 #print(PSetNL.spectral_n(0.3,10))
 #plt.semilogx(PSetNL.k_array,PSetNL.spectral_n(0.3,PSetNL.k_array).T)
 #plt.semilogx(PSetLin.k_array,PSetLin.spectral_n(0.3,PSetLin.k_array).T)
