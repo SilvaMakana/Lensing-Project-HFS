@@ -246,7 +246,7 @@ def perturb_b(z,k):
 def perturb_c(z,k):
 	return (1 + 4.5*a4/((1.5 + (spectral_n(z,k) +3)**4)*(q_nonlin(z,k)*a5)**(spectral_n(z,k) +3)))/(1 + (q_nonlin(z,k)*a5)**(spectral_n(z,k) +3.5))
 
-def perturb_F(z,kTriangle,i):
+def perturb_F(z,kTriangle(3,4,1.5708),i):
 	k1 = kTriangle.k1; k2 = kTriangle.k2; cos12 = kTriangle.cos12
 	if i==1:
 		k1 = kTriangle.k2; k2 = kTriangle.k3; cos12 = kTriangle.cos23
