@@ -266,7 +266,7 @@ for i in range (10):
 #x = perturb_F(z,tri,0)
 
 def B_matterspec(z,myTriangle):
-	return(2*perturb_F(z,myTriangle,0)*PSetNL.P_interp(z,myTriangle.k1)*PSetNL.P_interp(z,myTriangle.k2) + 2*perturb_F(z,myTriangle,1)**PSetNL.P_interp(z,myTriangle.k1)*PSetNL.P_interp(z,myTriangle.k2) + 2*perturb_F(z,myTriangle,2)**PSetNL.P_interp(z,myTriangle.k1)*PSetNL.P_interp(z,myTriangle.k2))
+	return(2*perturb_F(z,myTriangle,0)*PSetNL.P_interp(z,myTriangle.k1)*PSetNL.P_interp(z,myTriangle.k2) + 2*perturb_F(z,myTriangle,1)*PSetNL.P_interp(z,myTriangle.k1)*PSetNL.P_interp(z,myTriangle.k2) + 2*perturb_F(z,myTriangle,2)*PSetNL.P_interp(z,myTriangle.k1)*PSetNL.P_interp(z,myTriangle.k2))
 #print(B_matterspec(z,tri))
 
 def Q123(z,myTriangle):
