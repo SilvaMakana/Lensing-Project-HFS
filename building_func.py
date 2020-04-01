@@ -244,11 +244,11 @@ def sigma_8(z,kstart,kend,n): #Sigma_8 cosmological function of redshift, z
 def Q3(z,k):
 	return (4 - 2**PSetLin.spectral_n(z,k))/(1 + 2**(PSetLin.spectral_n(z,k) + 1))
 def perturb_a(z,k):
-	return (1 + sigma_8(z,kstart,kend,n)**a6 * (0.7*Q3(z,k))**0.5 * (q_nonlin(z,k)*a1)**(PSetNL.spectral_n(z,k) + a2))/ (1 + (q_nonlin(z,k)*a1)**(PSetNL.spectral_n(z,k) + a2))
+	return (1 + sigma_8(z,kstart,kend,n)**a6 * (0.7*Q3(z,k))**0.5 * (q_nonlin(z,k)*a1)**(PSetLin.spectral_n(z,k) + a2))/ (1 + (q_nonlin(z,k)*a1)**(PSetLin.spectral_n(z,k) + a2))
 def perturb_b(z,k):
-	return (1 + 0.2*a3*(PSetNL.spectral_n(z,k)+3)*q_nonlin(z,k)**(PSetNL.spectral_n(z,k)+3))/(1 + q_nonlin(z,k)**(PSetNL.spectral_n(z,k)+3.5))
+	return (1 + 0.2*a3*(PSetLin.spectral_n(z,k)+3)*q_nonlin(z,k)**(PSetLin.spectral_n(z,k)+3))/(1 + q_nonlin(z,k)**(PSetLin.spectral_n(z,k)+3.5))
 def perturb_c(z,k):
-	return ((1 + 4.5*a4/((1.5 + (PSetNL.spectral_n(z,k) +3)**4))*(q_nonlin(z,k)*a5)**(PSetNL.spectral_n(z,k) +3)))/(1 + (q_nonlin(z,k)*a5)**(PSetNL.spectral_n(z,k) +3.5))
+	return ((1 + 4.5*a4/((1.5 + (PSetLin.spectral_n(z,k) +3)**4))*(q_nonlin(z,k)*a5)**(PSetLin.spectral_n(z,k) +3)))/(1 + (q_nonlin(z,k)*a5)**(PSetLin.spectral_n(z,k) +3.5))
 
 def perturb_F(z,myTriangle,i):
 	k1 = myTriangle.k1; k2 = myTriangle.k2; cos12 = myTriangle.cos12
