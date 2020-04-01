@@ -257,13 +257,26 @@ def perturb_F(z,myTriangle,i):
 		k1 = myTriangle.k3; k2 = myTriangle.k1; cos12 = myTriangle.cos13
 	return (5/7*perturb_a(z,k1)*perturb_a(z,k2)+1/2*cos12*(k1/k2+k2/k1)*perturb_b(z,k1)*perturb_b(z,k2)+2/7*cos12**2*perturb_c(z,k1)*perturb_c(z,k2))
 
-z=2.0
-tri = kTriangle(3,4,np.pi/2)
-x = perturb_F(z,tri,0)
+z=1.0
+k_input = np.logspace(-1.39794000867,-0.39794000867,10)
+for i in range (0,3):
+	tri = kTriangle(k_input[i],k_input[i],0.2*np.pi)
+#x = perturb_F(z,tri,0)
 
 def B_matterspec(z,myTriangle):
 	return(2*perturb_F(z,myTriangle,0)*PSetNL.P_interp(z,myTriangle.k1)*PSetNL.P_interp(z,myTriangle.k2) + 2*perturb_F(z,myTriangle,1)**PSetNL.P_interp(z,myTriangle.k1)*PSetNL.P_interp(z,myTriangle.k2) + 2*perturb_F(z,myTriangle,2)**PSetNL.P_interp(z,myTriangle.k1)*PSetNL.P_interp(z,myTriangle.k2))
-print(B_matterspec(z,tri))
+#print(B_matterspec(z,tri))
+
+def Q123(z,myTriangle):
+	return(B_matterspec(z,myTriangle)/(PSetNL.P_interp(z,myTriangle.k1)*PSetNL.P_interp(z,myTriangle.k2) + PSetNL.P_interp(z,myTriangle.k1)*PSetNL.P_interp(z,myTriangle.k3) + PSetNL.P_interp(z,myTriangle.k2)*PSetNL.P_interp(z,myTriangle.k3)))
+
+#tri[i] = kTriangle(k_input[i],k_input[i],0.2*np.pi)
+
+plt.plot(k_input[i],Q123(z,tri))
+plt.show
+
+
+
 
 #print(PSetNL.spectral_n(0.3,10))
 #plt.semilogx(PSetNL.k_array,PSetNL.spectral_n(0.3,PSetNL.k_array).T)
