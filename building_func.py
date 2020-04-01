@@ -259,8 +259,10 @@ def perturb_F(z,myTriangle,i):
 
 z=1.0
 k_input = np.logspace(-1.39794000867,-0.39794000867,10)
-for i in range (0,3):
+for i in range (10):
 	tri = kTriangle(k_input[i],k_input[i],0.2*np.pi)
+	#print(tri.k1)
+#sys.exit()
 #x = perturb_F(z,tri,0)
 
 def B_matterspec(z,myTriangle):
@@ -272,8 +274,9 @@ def Q123(z,myTriangle):
 
 #tri[i] = kTriangle(k_input[i],k_input[i],0.2*np.pi)
 
+#for i in range (10):
 plt.plot(k_input[i],Q123(z,tri))
-plt.show
+plt.show()
 
 
 
