@@ -143,17 +143,17 @@ class kTriangle(object):
 			self.k1 = in1
 			self.k2 = in2
 			self.cos12 = np.cos(in3)
-			self.k3 = np.sqrt(self.k1**2 + self.k2**2 - 2*self.k1*self.k2*self.cos12)
+			self.k3 = np.sqrt(self.k1**2 + self.k2**2 + 2*self.k1*self.k2*self.cos12)
 
 		elif input == "SSS":
 			self.k1 = in1
 			self.k2 = in2
 			self.k3 = in3
-			self.cos12 = (self.k1**2 + self.k2**2 - self.k3**2)/(2*self.k1*self.k2)
+			self.cos12 = (self.k1**2 + self.k2**2 + self.k3**2)/(2*self.k1*self.k2)
 		
 		
-		self.cos13 = (self.k1**2 + self.k3**2 - self.k2**2)/(2*self.k1*self.k3)
-		self.cos23 = (self.k2**2 + self.k3**2 - self.k1**2)/(2*self.k2*self.k3)
+		self.cos13 = (self.k1**2 - self.k3**2 - self.k2**2)/(2*self.k1*self.k3)
+		self.cos23 = (self.k2**2 - self.k3**2 - self.k1**2)/(2*self.k2*self.k3)
 
 		assert self.k1 + self.k2 > self.k3
 	"""output for SAS method, length of k1, length of k2, and cosine of angle between k1 and k2"""
@@ -250,6 +250,8 @@ def perturb_b(z,k):
 def perturb_c(z,k):
 	return ((1 + 4.5*a4/((1.5 + (PSetLin.spectral_n(z,k) +3)**4))*(q_nonlin(z,k)*a5)**(PSetLin.spectral_n(z,k) +3)))/(1 + (q_nonlin(z,k)*a5)**(PSetLin.spectral_n(z,k) +3.5))
 
+#print(Q3(1.0,0.08),perturb_a(1.0,0.08),perturb_b(1.0,0.08),perturb_c(1.0,0.08))
+#sys.exit()
 def perturb_F(z,myTriangle,i):
 	k1 = myTriangle.k1; k2 = myTriangle.k2; cos12 = myTriangle.cos12
 	if i==1:
@@ -257,7 +259,7 @@ def perturb_F(z,myTriangle,i):
 	if i==2:
 		k1 = myTriangle.k3; k2 = myTriangle.k1; cos12 = myTriangle.cos13
 	return (5/7*perturb_a(z,k1)*perturb_a(z,k2)+1/2*cos12*(k1/k2+k2/k1)*perturb_b(z,k1)*perturb_b(z,k2)+2/7*cos12**2*perturb_c(z,k1)*perturb_c(z,k2))
-
+#print(perturb_F(1.0,kTriangle(0.08,0.08,0.2*np.pi),0),perturb_F(1.0,kTriangle(0.08,0.08,0.2*np.pi),1),perturb_F(1.0,kTriangle(0.08,0.08,0.2*np.pi),2))
 #sys.exit()
 #x = perturb_F(z,tri,0)
 
@@ -272,9 +274,9 @@ def Q123(z,myTriangle):
 
 #for i in range (10):
 z=1.0
-k_input = np.logspace(-1.39794000867,-0.39794000867,10)
-for i in range (10):
-	tri = kTriangle(k_input[i],k_input[i],0.2*np.pi)
+k_input = np.logspace(-1.39794000867,-0.39794000867,100)
+for i in range (100):
+	tri = kTriangle(k_input[i],k_input[i],0.6*np.pi)
         #print(tri.k1)
 	plt.scatter(k_input[i],Q123(z,tri))
 plt.show()
