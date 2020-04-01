@@ -197,8 +197,8 @@ PSetLin = PowerSpectrumMultiZ(name_base,name_endLin,n_z,k_min,k_max,n_k)
 #	plt.loglog(PSet.k_array,PSet.Ps[i].P_array)
 #plt.loglog(PSetNL.k_array,PSetNL.P_grid.T)
 #plt.loglog(PSetLin.k_array,PSetLin.P_grid.T)
-#
 #plt.show()
+#sys.exit()
 #for i in range(0,3):
 #	for j in range(0,10):
 #		print(i,j,PSetNL.P_interp(i,j))
@@ -209,7 +209,8 @@ def scale_nonlin(z,k):
 def k_nonlin(z):
 	return optimize.root_scalar(lambda k: scale_nonlin(z,k),bracket=[kstart,kend],method ='brentq')
 
-#print(k_nonlin(1.5))
+#print(k_nonlin(1.0))
+#sys.exit()
 def q_nonlin(z,k):
 	return k/k_nonlin(z).root
 
@@ -241,13 +242,13 @@ def sigma_8(z,kstart,kend,n): #Sigma_8 cosmological function of redshift, z
 
 #defining parameter functions from arXiv:1111.4477v2
 def Q3(z,k):
-	return (4 - 2**PSetNL.spectral_n(z,k))/(1 + 2**(PSetNL.spectral_n(z,k) + 1))
+	return (4 - 2**PSetLin.spectral_n(z,k))/(1 + 2**(PSetLin.spectral_n(z,k) + 1))
 def perturb_a(z,k):
 	return (1 + sigma_8(z,kstart,kend,n)**a6 * (0.7*Q3(z,k))**0.5 * (q_nonlin(z,k)*a1)**(PSetNL.spectral_n(z,k) + a2))/ (1 + (q_nonlin(z,k)*a1)**(PSetNL.spectral_n(z,k) + a2))
 def perturb_b(z,k):
 	return (1 + 0.2*a3*(PSetNL.spectral_n(z,k)+3)*q_nonlin(z,k)**(PSetNL.spectral_n(z,k)+3))/(1 + q_nonlin(z,k)**(PSetNL.spectral_n(z,k)+3.5))
 def perturb_c(z,k):
-	return (1 + 4.5*a4/((1.5 + (PSetNL.spectral_n(z,k) +3)**4)*(q_nonlin(z,k)*a5)**(PSetNL.spectral_n(z,k) +3)))/(1 + (q_nonlin(z,k)*a5)**(PSetNL.spectral_n(z,k) +3.5))
+	return ((1 + 4.5*a4/((1.5 + (PSetNL.spectral_n(z,k) +3)**4))*(q_nonlin(z,k)*a5)**(PSetNL.spectral_n(z,k) +3)))/(1 + (q_nonlin(z,k)*a5)**(PSetNL.spectral_n(z,k) +3.5))
 
 def perturb_F(z,myTriangle,i):
 	k1 = myTriangle.k1; k2 = myTriangle.k2; cos12 = myTriangle.cos12
