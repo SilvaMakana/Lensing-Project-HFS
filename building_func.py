@@ -35,6 +35,7 @@ n=10000
 #Omega_r = 0
 #Omega_m = 0.3089
 #Omega_L = 0.6911
+#n_s_primordial = 0.963
 #d_h = 3000
 #start = 0
 #end = 3
@@ -202,6 +203,11 @@ PSetLin = PowerSpectrumMultiZ(name_base,name_endLin,n_z,k_min,k_max,n_k)
 #for i in range(0,3):
 #	for j in range(0,10):
 #		print(i,j,PSetNL.P_interp(i,j))
+
+#defining spectral_n(z,k) such that n does NOT produce wiggles, so we are smoothing it out
+def spectral_n_nowiggle(z,k):
+	return(n_s_primordial + 1/(2*0.01)*np.log(np.exp(0.01)*Transfer(k)/(np.exp(-0.01)*Transfer(k)))) 
+
 
 #defining non-linear k scale (h Mpc^-1) from arXiv:1111.4477v2
 def scale_nonlin(z,k):
