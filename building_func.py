@@ -31,6 +31,8 @@ n=10000
 #print(xmid,Ai)
 
 #Defining radial distance from redshift integrator
+H0 = 67.37
+h_cosmo = H0/100
 #Omega_k = 0
 #Omega_r = 0
 Omega_b = 0.02233/h_cosmo**2
@@ -38,10 +40,8 @@ Omega_CDM = 0.1198/h_cosmo**2
 Omega_0 = (Omega_b + Omega_CDM)/h_cosmo**2
 #Omega_L = 0.6911
 n_s_primordial = 0.963
-H0 = 67.37
-h_cosmo = H0/100
 #d_h = 3000
-#Tempfactor_CMB = 1.00
+Tempfactor_CMB = 1.00
 #start = 0
 #end = 3
 #Chi = 0
@@ -218,19 +218,19 @@ def alpha_Gamma(Omega_b):
 	return(1 - 0.328*np.log(431*Omega_0*h_cosmo**2)*Omega_b/Omega_0 + 0.38*np.log(22.3*Omega_0*h_cosmo**2)*(Omega_b/Omega_0)**2)
 
 def Gamma_transfer(k):
-	return(Omega_0*h_cosmo*(alpha_Gamma(Omega_b) + (1-alpha_Gamma(Omega_b))/(1+(0.43k*s_transfer(Omega_B))**4)))
+	return(Omega_0*h_cosmo*(alpha_Gamma(Omega_b) + (1-alpha_Gamma(Omega_b))/(1+(0.43*k*s_transfer(Omega_b))**4)))
 
 def q_transfer(k):
 	return(k*Tempfactor_CMB**2/Gamma_transfer(k))
 
 def L_transfer(k):
-	return(np.log(2*e + 1.8*q_transfer(k)))
+	return(np.log(2*np.e + 1.8*q_transfer(k)))
 
 def C_transfer(k):
 	return(14.2 + 731/(1+62.5*q_transfer(k)))
 
 def Transfer(k):
-	return(L_transfer(k)/(L_transfer(k) + C_transfer(k)*q_transfer(k)))
+	return(L_transfer(k)/(L_transfer(k) + C_transfer(k)*q_transfer(k)**2))
 
 
 ##defining spectral_n(z,k) such that n does NOT produce wiggles from the equations in arXiv:astro-ph/9709112, so we are smoothing it out##
@@ -277,7 +277,7 @@ def sigma_8(z,kstart,kend,n): #Sigma_8 cosmological function of redshift, z
 
 #defining parameter functions from arXiv:1111.4477v2
 def Q3(z,k):
-	return (4 - 2**spectral_n_nowiggle(k)))/(1 + 2**(spectral_n_nowiggle(k) + 1))
+	return ((4 - 2**spectral_n_nowiggle(k))/(1 + 2**(spectral_n_nowiggle(k) + 1)))
 def perturb_a(z,k):
 	return (1 + sigma_8(z,kstart,kend,n)**a6 * (0.7*Q3(z,k))**0.5 * (q_nonlin(z,k)*a1)**(spectral_n_nowiggle(k) + a2))/ (1 + (q_nonlin(z,k)*a1)**(spectral_n_nowiggle(k) + a2))
 def perturb_b(z,k):
@@ -309,9 +309,9 @@ def Q123(z,myTriangle):
 
 #for i in range (10):
 z=1.0
-k_input = np.logspace(-1.39794000867,-0.39794000867,100)
+k_input = np.logspace(-1.52287874528,-0.69897000433,100)
 for i in range (100):
-	tri = kTriangle(k_input[i],k_input[i],0.6*np.pi)
+	tri = kTriangle(k_input[i],2*k_input[i],0.6*np.pi)
         #print(tri.k1)
 	plt.scatter(k_input[i],Q123(z,tri))
 plt.show()
