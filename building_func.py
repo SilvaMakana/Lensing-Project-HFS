@@ -221,7 +221,7 @@ def Gamma_transfer(k):
 	return(Omega_0*h_cosmo*(alpha_Gamma(Omega_b) + (1-alpha_Gamma(Omega_b))/(1+(0.43*k*s_transfer(Omega_b))**4)))
 
 def q_transfer(k):
-	return(k*Tempfactor_CMB**2/Gamma_transfer(k))
+	return(k*Tempfactor_CMB**2/(Gamma_transfer(k)*h_cosmo))
 
 def L_transfer(k):
 	return(np.log(2*np.e + 1.8*q_transfer(k)))
@@ -235,7 +235,7 @@ def Transfer(k):
 
 ##defining spectral_n(z,k) such that n does NOT produce wiggles from the equations in arXiv:astro-ph/9709112, so we are smoothing it out##
 def spectral_n_nowiggle(k):
-	return(n_s_primordial + 1/(2*0.01)*np.log(np.exp(0.01)*Transfer(k)/(np.exp(-0.01)*Transfer(k)))) 
+	return(n_s_primordial + 1/(2*0.01)*np.log(Transfer(np.exp(0.01)*k)/(Transfer(np.exp(-0.01)*k)))) 
 
 
 #defining non-linear k scale (h Mpc^-1) from arXiv:1111.4477v2
