@@ -33,10 +33,15 @@ n=10000
 #Defining radial distance from redshift integrator
 #Omega_k = 0
 #Omega_r = 0
-#Omega_m = 0.3089
+#Omega_b = 0.02233/h_cosmo
+#Omega_CDM = 0.1198/h_cosmo
+#Omega_0 = (Omega_b + Omega_CDM)/h_cosmo
 #Omega_L = 0.6911
 #n_s_primordial = 0.963
+#H0 = 67.37
+#h_cosmo = H0/100
 #d_h = 3000
+#Tempfactor_CMB = 1.00
 #start = 0
 #end = 3
 #Chi = 0
@@ -204,8 +209,32 @@ PSetLin = PowerSpectrumMultiZ(name_base,name_endLin,n_z,k_min,k_max,n_k)
 #	for j in range(0,10):
 #		print(i,j,PSetNL.P_interp(i,j))
 
-#defining spectral_n(z,k) such that n does NOT produce wiggles, so we are smoothing it out
-def spectral_n_nowiggle(z,k):
+##Defining the functions from arXiv:astro-ph/9709112 Eq. 26-31##
+
+def s_transfer(Omega_b):
+	return(44.5*np.log(9.83/(Omega_0*h_cosmo**2))/(1 + 10*(Omega_b*h_cosmo**2)**0.75))
+
+def alpha_Gamma(Omega_b):
+	return(1 - 0.328*np.log(431*Omega_0*h_cosmo**2)*Omega_b/Omega_0 + 0.38*np.log(22.3*Omega_0*h_cosmo**2)*(Omega_b/Omega_0)**2)
+
+def Gamma_transfer(k):
+	return(Omega_0*h_cosmo*(alpha_Gamma(Omega_b) + (1-alpha_Gamma(Omega_b))/(1+(0.43k*s_transfer(Omega_B))**4)))
+
+def q_transfer(k):
+	return(k*Tempfactor_CMB**2/Gamma_transfer(k))
+
+def L_transfer(k):
+	return(np.log(2*e + 1.8*q_transfer(k)))
+
+def C_transfer(k):
+	return(14.2 + 731/(1+62.5*q_transfer(k)))
+
+def Transfer(k):
+	return(L_transfer(k)/(L_transfer(k) + C_transfer(k)*q_transfer(k)))
+
+
+##defining spectral_n(z,k) such that n does NOT produce wiggles from the equations in arXiv:astro-ph/9709112, so we are smoothing it out##
+def spectral_n_nowiggle(k):
 	return(n_s_primordial + 1/(2*0.01)*np.log(np.exp(0.01)*Transfer(k)/(np.exp(-0.01)*Transfer(k)))) 
 
 
