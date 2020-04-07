@@ -33,13 +33,13 @@ n=10000
 #Defining radial distance from redshift integrator
 #Omega_k = 0
 #Omega_r = 0
-#Omega_b = 0.02233/h_cosmo
-#Omega_CDM = 0.1198/h_cosmo
-#Omega_0 = (Omega_b + Omega_CDM)/h_cosmo
+Omega_b = 0.02233/h_cosmo**2
+Omega_CDM = 0.1198/h_cosmo**2
+Omega_0 = (Omega_b + Omega_CDM)/h_cosmo**2
 #Omega_L = 0.6911
-#n_s_primordial = 0.963
-#H0 = 67.37
-#h_cosmo = H0/100
+n_s_primordial = 0.963
+H0 = 67.37
+h_cosmo = H0/100
 #d_h = 3000
 #Tempfactor_CMB = 1.00
 #start = 0
@@ -277,13 +277,13 @@ def sigma_8(z,kstart,kend,n): #Sigma_8 cosmological function of redshift, z
 
 #defining parameter functions from arXiv:1111.4477v2
 def Q3(z,k):
-	return (4 - 2**PSetLin.spectral_n(z,k))/(1 + 2**(PSetLin.spectral_n(z,k) + 1))
+	return (4 - 2**spectral_n_nowiggle(k)))/(1 + 2**(spectral_n_nowiggle(k) + 1))
 def perturb_a(z,k):
-	return (1 + sigma_8(z,kstart,kend,n)**a6 * (0.7*Q3(z,k))**0.5 * (q_nonlin(z,k)*a1)**(PSetLin.spectral_n(z,k) + a2))/ (1 + (q_nonlin(z,k)*a1)**(PSetLin.spectral_n(z,k) + a2))
+	return (1 + sigma_8(z,kstart,kend,n)**a6 * (0.7*Q3(z,k))**0.5 * (q_nonlin(z,k)*a1)**(spectral_n_nowiggle(k) + a2))/ (1 + (q_nonlin(z,k)*a1)**(spectral_n_nowiggle(k) + a2))
 def perturb_b(z,k):
-	return (1 + 0.2*a3*(PSetLin.spectral_n(z,k)+3)*q_nonlin(z,k)**(PSetLin.spectral_n(z,k)+3))/(1 + q_nonlin(z,k)**(PSetLin.spectral_n(z,k)+3.5))
+	return (1 + 0.2*a3*(spectral_n_nowiggle(k)+3)*q_nonlin(z,k)**(spectral_n_nowiggle(k)+3))/(1 + q_nonlin(z,k)**(spectral_n_nowiggle(k)+3.5))
 def perturb_c(z,k):
-	return ((1 + 4.5*a4/((1.5 + (PSetLin.spectral_n(z,k) +3)**4))*(q_nonlin(z,k)*a5)**(PSetLin.spectral_n(z,k) +3)))/(1 + (q_nonlin(z,k)*a5)**(PSetLin.spectral_n(z,k) +3.5))
+	return ((1 + 4.5*a4/((1.5 + (spectral_n_nowiggle(k) +3)**4))*(q_nonlin(z,k)*a5)**(spectral_n_nowiggle(k) + 3)))/(1 + (q_nonlin(z,k)*a5)**(spectral_n_nowiggle(k) + 3.5))
 
 #print(Q3(1.0,0.08),perturb_a(1.0,0.08),perturb_b(1.0,0.08),perturb_c(1.0,0.08))
 #sys.exit()
