@@ -37,7 +37,7 @@ h_cosmo = H0/100
 #Omega_r = 0
 Omega_b = 0.02233/h_cosmo**2
 Omega_CDM = 0.1198/h_cosmo**2
-Omega_0 = (Omega_b + Omega_CDM)/h_cosmo**2
+Omega_0 = (Omega_b + Omega_CDM)
 #Omega_L = 0.6911
 n_s_primordial = 0.963
 #d_h = 3000
@@ -235,7 +235,7 @@ def Transfer(k):
 
 ##defining spectral_n(z,k) such that n does NOT produce wiggles from the equations in arXiv:astro-ph/9709112, so we are smoothing it out##
 def spectral_n_nowiggle(k):
-	return(n_s_primordial + 1/(2*0.01)*np.log(Transfer(np.exp(0.01)*k)/(Transfer(np.exp(-0.01)*k)))) 
+	return(n_s_primordial + 1/(0.01)*np.log(Transfer(np.exp(0.01)*k)/(Transfer(np.exp(-0.01)*k)))) 
 
 
 #defining non-linear k scale (h Mpc^-1) from arXiv:1111.4477v2
@@ -310,12 +310,17 @@ def Q123(z,myTriangle):
 #for i in range (10):
 z=1.0
 k_input = np.logspace(-1.52287874528,-0.69897000433,100)
-for i in range (100):
-	tri = kTriangle(k_input[i],2*k_input[i],0.6*np.pi)
-        #print(tri.k1)
-	plt.scatter(k_input[i],Q123(z,tri))
-plt.show()
+#for i in range (100):
+#	tri = kTriangle(k_input[i],2*k_input[i],0.6*np.pi)
+#        #print(tri.k1)
+#	plt.scatter(k_input[i],Q123(z,tri))
+#plt.show()
 
+for i in range (100):
+       # tri = kTriangle(k_input[i],2*k_input[i],0.6*np.pi)
+        #print(tri.k1)
+        plt.scatter(k_input[i],spectral_n_nowiggle(k_input[i]))
+plt.show()
 
 
 
