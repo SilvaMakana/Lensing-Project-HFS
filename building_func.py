@@ -155,11 +155,11 @@ class kTriangle(object):
 			self.k1 = in1
 			self.k2 = in2
 			self.k3 = in3
-			self.cos12 = (self.k1**2 + self.k2**2 + self.k3**2)/(2*self.k1*self.k2)
+			self.cos12 = (-self.k1**2 - self.k2**2 + self.k3**2)/(2*self.k1*self.k2)
 		
 		
-		self.cos13 = (self.k1**2 - self.k3**2 - self.k2**2)/(2*self.k1*self.k3)
-		self.cos23 = (self.k2**2 - self.k3**2 - self.k1**2)/(2*self.k2*self.k3)
+		self.cos13 = (-self.k1**2 - self.k3**2 + self.k2**2)/(2*self.k1*self.k3)
+		self.cos23 = (-self.k2**2 - self.k3**2 + self.k1**2)/(2*self.k2*self.k3)
 
 		assert self.k1 + self.k2 > self.k3
 	"""output for SAS method, length of k1, length of k2, and cosine of angle between k1 and k2"""
@@ -221,7 +221,7 @@ def Gamma_transfer(k):
 	return(Omega_0*h_cosmo*(alpha_Gamma(Omega_b) + (1-alpha_Gamma(Omega_b))/(1+(0.43*k*s_transfer(Omega_b))**4)))
 
 def q_transfer(k):
-	return(k*Tempfactor_CMB**2/(Gamma_transfer(k)*h_cosmo))
+	return(k*Tempfactor_CMB**2/(Gamma_transfer(k)))
 
 def L_transfer(k):
 	return(np.log(2*np.e + 1.8*q_transfer(k)))
@@ -310,17 +310,17 @@ def Q123(z,myTriangle):
 #for i in range (10):
 z=1.0
 k_input = np.logspace(-1.52287874528,-0.69897000433,100)
-#for i in range (100):
-#	tri = kTriangle(k_input[i],2*k_input[i],0.6*np.pi)
-#        #print(tri.k1)
-#	plt.scatter(k_input[i],Q123(z,tri))
-#plt.show()
-
 for i in range (100):
+	tri = kTriangle(k_input[i],k_input[i],0.6*np.pi)
+        #print(tri.k1)
+	plt.scatter(k_input[i],Q123(z,tri))
+plt.show()
+
+#for i in range (100):
        # tri = kTriangle(k_input[i],2*k_input[i],0.6*np.pi)
         #print(tri.k1)
-        plt.scatter(k_input[i],spectral_n_nowiggle(k_input[i]))
-plt.show()
+#        plt.scatter(k_input[i],spectral_n_nowiggle(k_input[i]))
+#plt.show()
 
 
 
