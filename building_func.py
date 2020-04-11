@@ -311,7 +311,7 @@ def Q123(z,myTriangle):
 z=1.0
 k_input = np.logspace(-1.52287874528,-0.69897000433,100)
 for i in range (100):
-	tri = kTriangle(k_input[i],k_input[i],0.6*np.pi)
+	tri = kTriangle(k_input[i],2*k_input[i],0.6*np.pi)
         #print(tri.k1)
 	plt.scatter(k_input[i],Q123(z,tri))
 plt.show()
