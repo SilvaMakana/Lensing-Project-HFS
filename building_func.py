@@ -43,7 +43,7 @@ Omega_0 = (Omega_b + Omega_CDM)
 Omega_L = 0.680
 Omega_m = 0.320
 n_s_primordial = 0.963
-#d_h = 3000
+d_h = 3000
 Tempfactor_CMB = 1.00
 #start = 0
 #end = 3
@@ -324,8 +324,8 @@ def Q123(z,myTriangle):
         #print(tri.k1)
 #        plt.scatter(k_input[i],spectral_n_nowiggle(k_input[i]))
 #plt.show()
-lambda_V = 5*10**(-7)
-def tau_meandust(lambda,n,z_ini,z_f):
+wavelength_V = 5*10**(-7)
+def tau_meandust(wavelength,n,z_ini,z_f):
 	tau_dust_Universe = 0.0521
 	sigma_galaxy = 1
 	numberdensity_galaxy = 0.037 #comoving number density of galaxies in units of h^-3 Mpc^3
@@ -334,10 +334,11 @@ def tau_meandust(lambda,n,z_ini,z_f):
 		delta_z = (z_f-z_ini)/n
 		zi = (z_ini + i*delta_z)
 		zmid = 1/2*(zi + z_ini + (i+1)*delta_z)
-		tau_dust += sigma_galaxy*numberdensity_galaxy*tau_dust_Universe*(1+z)*(lambda*3.24078*10**(-23)/h_cosmo)*d_h/numpy.sqrt(Omega_r*(1+zmid)**4 + Omega_m*(1+zmid)**3 + Omega_k*(1+zmid)**2 + Omega_L) * delta_z
+		tau_dust += sigma_galaxy*numberdensity_galaxy*tau_dust_Universe*(1+zmid)*(wavelength*3.24078*10**(-23)/h_cosmo)*d_h/np.sqrt(Omega_r*(1+zmid)**4 + Omega_m*(1+zmid)**3 + Omega_k*(1+zmid)**2 + Omega_L) * delta_z
 	return (tau_dust)
-
-plt.plot(z_f,tau_meandust(lambda_V,n,0,z_f))
+z_f = [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0]
+for j in range (10):
+	plt.scatter(z_f[j],tau_meandust(wavelength_V,n,0,z_f[j]))
 plt.show()
 #print(PSetNL.spectral_n(0.3,10))
 #plt.semilogx(PSetNL.k_array,PSetNL.spectral_n(0.3,PSetNL.k_array).T)
