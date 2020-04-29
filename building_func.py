@@ -3,8 +3,10 @@ import numpy as np
 from scipy import optimize
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp2d, interp1d,InterpolatedUnivariateSpline,RectBivariateSpline
+## kstart is the first k value from the CLASS output files in units of h^-1Mpc ##
 kstart = 1.045e-5
 kend = 33.308
+##Integration step size##
 n=10000
 
 #start = 0
@@ -33,12 +35,13 @@ n=10000
 #Defining radial distance from redshift integrator
 H0 = 67.37
 h_cosmo = H0/100
-#Omega_k = 0
-#Omega_r = 0
+Omega_k = 0
+Omega_r = 0
 Omega_b = 0.02233/h_cosmo**2
 Omega_CDM = 0.1198/h_cosmo**2
 Omega_0 = (Omega_b + Omega_CDM)
-#Omega_L = 0.6911
+Omega_L = 0.680
+Omega_m = 0.320
 n_s_primordial = 0.963
 #d_h = 3000
 Tempfactor_CMB = 1.00
@@ -308,22 +311,34 @@ def Q123(z,myTriangle):
 #tri[i] = kTriangle(k_input[i],k_input[i],0.2*np.pi)
 
 #for i in range (10):
-z=1.0
-k_input = np.logspace(-1.52287874528,-0.69897000433,100)
-for i in range (100):
-	tri = kTriangle(k_input[i],2*k_input[i],0.6*np.pi)
-        #print(tri.k1)
-	plt.scatter(k_input[i],Q123(z,tri))
-plt.show()
+#z=1.0
+#k_input = np.logspace(-1.52287874528,-0.69897000433,100)
+#for i in range (100):
+#	tri = kTriangle(k_input[i],2*k_input[i],0.6*np.pi)
+#        #print(tri.k1)
+#	plt.scatter(k_input[i],Q123(z,tri))
+#plt.show()
 
 #for i in range (100):
        # tri = kTriangle(k_input[i],2*k_input[i],0.6*np.pi)
         #print(tri.k1)
 #        plt.scatter(k_input[i],spectral_n_nowiggle(k_input[i]))
 #plt.show()
+lambda_V = 5*10**(-7)
+def tau_meandust(lambda,n,z_ini,z_f):
+	tau_dust_Universe = 0.0521
+	sigma_galaxy = 1
+	numberdensity_galaxy = 0.037 #comoving number density of galaxies in units of h^-3 Mpc^3
+	tau_dust = 0
+	for i in range (n):
+		delta_z = (z_f-z_ini)/n
+		zi = (z_ini + i*delta_z)
+		zmid = 1/2*(zi + z_ini + (i+1)*delta_z)
+		tau_dust += sigma_galaxy*numberdensity_galaxy*tau_dust_Universe*(1+z)*(lambda*3.24078*10**(-23)/h_cosmo)*d_h/numpy.sqrt(Omega_r*(1+zmid)**4 + Omega_m*(1+zmid)**3 + Omega_k*(1+zmid)**2 + Omega_L) * delta_z
+	return (tau_dust)
 
-
-
+plt.plot(z_f,tau_meandust(lambda_V,n,0,z_f))
+plt.show()
 #print(PSetNL.spectral_n(0.3,10))
 #plt.semilogx(PSetNL.k_array,PSetNL.spectral_n(0.3,PSetNL.k_array).T)
 #plt.semilogx(PSetLin.k_array,PSetLin.spectral_n(0.3,PSetLin.k_array).T)
