@@ -2,6 +2,7 @@ import sys
 import numpy as np
 from scipy import optimize
 import matplotlib.pyplot as plt
+import pandas as pd
 from scipy.interpolate import interp2d, interp1d,InterpolatedUnivariateSpline,RectBivariateSpline
 ## kstart is the first k value from the CLASS output files in units of h^-1Mpc ##
 kstart = 1.045e-5
@@ -24,7 +25,7 @@ n=10000
 #	return Ai
 #print(area(0,10,5,0))
 
-#Define numerical integration as a for loop
+###Define numerical integration as a for loop
 #for i in range (n):
 #	delta_x = (end-start)/n
 #	xi = (start + i*delta_x)
@@ -32,7 +33,7 @@ n=10000
 #	Ai += (xmid)**2 * delta_x 
 #print(xmid,Ai)
 
-#Defining radial distance from redshift integrator
+###Defining radial distance from redshift integrator
 H0 = 67.37
 h_cosmo = H0/100
 Omega_k = 0
@@ -59,7 +60,7 @@ Tempfactor_CMB = 1.00
 #	return Chi
 #print(distance (0.3089,0.6911,0,0,3000,0,0.1,10000))
 
-#Defining Window Function
+###Defining Window Function
 #Chi1 = 10
 #Chi2 = 2
 #if (Chi1 >= Chi2):
@@ -68,6 +69,8 @@ Tempfactor_CMB = 1.00
 #	W = 0
 #print(W)
 
+
+###Building Power Spectra from CLASS data output
 class PowerSpectrumSingleZ(object):
 	"""class to store a power spectrum at a single redshift, loaded from an input file, with input k range"""
 	def __init__(self,filename,log_k_array):
@@ -143,7 +146,7 @@ class PowerSpectrumMultiZ(object):
 		"""get n=d ln(P)/d ln(k) as a function of z and k"""
 		return self.log_P_interp(z,np.log(k),dy=1)
 
-
+###Building a momentum (k) triangle that only allows for closed k-space configurations in bispectrum
 class kTriangle(object):
 	def __init__(self,in1,in2,in3,input="SAS"):
 		"""if using SAS, then, in1=length of k1, in2=length of k2, in3 = angle in radians between k1 and k2"""
@@ -212,7 +215,7 @@ PSetLin = PowerSpectrumMultiZ(name_base,name_endLin,n_z,k_min,k_max,n_k)
 #	for j in range(0,10):
 #		print(i,j,PSetNL.P_interp(i,j))
 
-##Defining the functions from arXiv:astro-ph/9709112 Eq. 26-31##
+###Matter Bispecrum. Defining the functions from arXiv:astro-ph/9709112 Eq. 26-31
 
 def s_transfer(Omega_b):
 	return(44.5*np.log(9.83/(Omega_0*h_cosmo**2))/(1 + 10*(Omega_b*h_cosmo**2)**0.75)**0.5)
@@ -265,7 +268,7 @@ R = 8.0 #in units of h^-1 MpC
 def window(k):
 	return 3/(R**3)*(np.sin(k*R) - k*R*np.cos(k*R))/k**3
 
-
+#defining sigma_8 function
 def sigma_8(z,kstart,kend,n): #Sigma_8 cosmological function of redshift, z
 	Ai = 0
 	for i in range (n):
@@ -324,21 +327,46 @@ def Q123(z,myTriangle):
         #print(tri.k1)
 #        plt.scatter(k_input[i],spectral_n_nowiggle(k_input[i]))
 #plt.show()
-wavelength_V = 5*10**(-7)
+
+##Building Dust Model from  arXiv:0902.4240v1
+wavelength_V = 5.50*10**(-7) #in units of meters
+r_virial = 0.110 #in units of h^-1 kpc
+
+#calling data in from kext_albedo_WD_MW_3.1_60_D03.all found in the website https://www.astro.princeton.edu/~draine/dust/dustmix.html
+cols = ['lambda', 'albedo', '<cos>', 'C_ext/H' , 'K_abs', '<cos^2>', 'comment']
+
+table = pd.read_csv('kext_albedo_WD_MW_3.1_60_D03.all', names=cols, skiprows=78, delim_whitespace=True)
+
+#print(table)
+
+wavelength = table['lambda']
+extinction_per_H = table['C_ext/H']
+
+dust_interp = interp1d(wavelength, extinction_per_H, kind='linear')
+
+tau_g_Vband = 0.005871
+
+def tau_g(z):
+	return(tau_g_Vband*dust_interp(wavelength_V*10**(6)/(1+z))/dust_interp(wavelength_V*10**(6)/(1.36)))
+
+#defining dust model integral
+
 def tau_meandust(wavelength,n,z_ini,z_f):
-	tau_dust_Universe = 0.0521
-	sigma_galaxy = 1
+	sigma_galaxy = np.pi * r_virial**2
 	numberdensity_galaxy = 0.037 #comoving number density of galaxies in units of h^-3 Mpc^3
 	tau_dust = 0
 	for i in range (n):
 		delta_z = (z_f-z_ini)/n
 		zi = (z_ini + i*delta_z)
 		zmid = 1/2*(zi + z_ini + (i+1)*delta_z)
-		tau_dust += sigma_galaxy*numberdensity_galaxy*tau_dust_Universe*(1+zmid)*(wavelength*3.24078*10**(-23)/h_cosmo)*d_h/np.sqrt(Omega_r*(1+zmid)**4 + Omega_m*(1+zmid)**3 + Omega_k*(1+zmid)**2 + Omega_L) * delta_z
+		tau_dust += sigma_galaxy*numberdensity_galaxy*tau_g(zmid)*(1+zmid)**(2)*d_h/np.sqrt(Omega_r*(1+zmid)**4 + Omega_m*(1+zmid)**3 + Omega_k*(1+zmid)**2 + Omega_L) * delta_z
 	return (tau_dust)
-z_f = [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0]
-for j in range (10):
-	plt.scatter(z_f[j],tau_meandust(wavelength_V,n,0,z_f[j]))
+z_f = [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0]
+#ax = plt.gca()
+for j in range (20):
+	plt.scatter(z_f[j],1.086*tau_meandust(wavelength_V,n,0,z_f[j]))
+#	print(z_f[j],1.086*tau_meandust(wavelength_V,n,0,z_f[j]))
+plt.yscale('log')
 plt.show()
 #print(PSetNL.spectral_n(0.3,10))
 #plt.semilogx(PSetNL.k_array,PSetNL.spectral_n(0.3,PSetNL.k_array).T)
