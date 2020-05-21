@@ -33,7 +33,7 @@ n=10000
 #	Ai += (xmid)**2 * delta_x 
 #print(xmid,Ai)
 
-###Defining radial distance from redshift integrator
+##Defining radial distance from redshift integrator
 H0 = 67.37
 h_cosmo = H0/100
 Omega_k = 0
@@ -50,17 +50,22 @@ Tempfactor_CMB = 1.00
 #end = 3
 #Chi = 0
 #n = 10000
-#def distance (Omega_m,Omega_L,Omega_r,Omega_k,d_h,z_ini,z_f,n):
-#	Chi = 0
-#	for i in range (n):
-#		delta_z = (z_f-z_ini)/n
-#		zi = (z_ini + i*delta_z)
-#		zmid = 1/2*(zi + z_ini + (i+1)*delta_z)
-#		Chi += d_h/numpy.sqrt(Omega_r*(1+zmid)**4 + Omega_m*(1+zmid)**3 + Omega_k*(1+zmid)**2 + Omega_L) * delta_z
-#	return Chi
+def distance(z_ini,z_f):
+	Chi = 0
+	for i in range (n):
+		delta_z = (z_f-z_ini)/n
+		zi = (z_ini + i*delta_z)
+		zmid = 1/2*(zi + z_ini + (i+1)*delta_z)
+		Chi += d_h/numpy.sqrt(Omega_r*(1+zmid)**4 + Omega_m*(1+zmid)**3 + Omega_k*(1+zmid)**2 + Omega_L) * delta_z
+	return Chi
 #print(distance (0.3089,0.6911,0,0,3000,0,0.1,10000))
 
-###Defining Window Function
+##Defining Window Function
+def window_distance(distance1, distance2):
+	if (distance1 >= distance2):
+		return (1/distance2 - 1/distance1)
+	else:
+		return(0)
 #Chi1 = 10
 #Chi2 = 2
 #if (Chi1 >= Chi2):
@@ -70,7 +75,7 @@ Tempfactor_CMB = 1.00
 #print(W)
 
 
-###Building Power Spectra from CLASS data output
+##Building Power Spectra from CLASS data output
 class PowerSpectrumSingleZ(object):
 	"""class to store a power spectrum at a single redshift, loaded from an input file, with input k range"""
 	def __init__(self,filename,log_k_array):
@@ -146,7 +151,7 @@ class PowerSpectrumMultiZ(object):
 		"""get n=d ln(P)/d ln(k) as a function of z and k"""
 		return self.log_P_interp(z,np.log(k),dy=1)
 
-###Building a momentum (k) triangle that only allows for closed k-space configurations in bispectrum
+##Building a momentum (k) triangle that only allows for closed k-space configurations in bispectrum
 class kTriangle(object):
 	def __init__(self,in1,in2,in3,input="SAS"):
 		"""if using SAS, then, in1=length of k1, in2=length of k2, in3 = angle in radians between k1 and k2"""
@@ -215,7 +220,7 @@ PSetLin = PowerSpectrumMultiZ(name_base,name_endLin,n_z,k_min,k_max,n_k)
 #	for j in range(0,10):
 #		print(i,j,PSetNL.P_interp(i,j))
 
-###Matter Bispecrum. Defining the functions from arXiv:astro-ph/9709112 Eq. 26-31
+##Matter Bispecrum. Defining the functions from arXiv:astro-ph/9709112 Eq. 26-31
 
 def s_transfer(Omega_b):
 	return(44.5*np.log(9.83/(Omega_0*h_cosmo**2))/(1 + 10*(Omega_b*h_cosmo**2)**0.75)**0.5)
@@ -239,7 +244,7 @@ def Transfer(k):
 	return(L_transfer(k)/(L_transfer(k) + C_transfer(k)*q_transfer(k)**2))
 
 
-##defining spectral_n(z,k) such that n does NOT produce wiggles from the equations in arXiv:astro-ph/9709112, so we are smoothing it out##
+##Defining spectral_n(z,k) such that n does NOT produce wiggles from the equations in arXiv:astro-ph/9709112, so we are smoothing it out##
 def spectral_n_nowiggle(k):
 	return(n_s_primordial + 1/(0.01)*np.log(Transfer(np.exp(0.01)*k)/(Transfer(np.exp(-0.01)*k)))) 
 
@@ -330,7 +335,8 @@ def Q123(z,myTriangle):
 
 ##Building Dust Model from  arXiv:0902.4240v1
 wavelength_V = 5.50*10**(-7) #in units of meters
-r_virial = 0.110 #in units of h^-1 kpc
+r_virial = 0.110 #in units of h^-1 Mpc
+numberdensity_galaxy = 0.037 #comoving number density of galaxies in units of h^3 Mpc^-3
 
 #calling data in from kext_albedo_WD_MW_3.1_60_D03.all found in the website https://www.astro.princeton.edu/~draine/dust/dustmix.html
 cols = ['lambda', 'albedo', '<cos>', 'C_ext/H' , 'K_abs', '<cos^2>', 'comment']
@@ -353,7 +359,6 @@ def tau_g(z):
 
 def tau_meandust(wavelength,n,z_ini,z_f):
 	sigma_galaxy = np.pi * r_virial**2
-	numberdensity_galaxy = 0.037 #comoving number density of galaxies in units of h^-3 Mpc^3
 	tau_dust = 0
 	for i in range (n):
 		delta_z = (z_f-z_ini)/n
@@ -361,15 +366,33 @@ def tau_meandust(wavelength,n,z_ini,z_f):
 		zmid = 1/2*(zi + z_ini + (i+1)*delta_z)
 		tau_dust += sigma_galaxy*numberdensity_galaxy*tau_g(zmid)*(1+zmid)**(2)*d_h/np.sqrt(Omega_r*(1+zmid)**4 + Omega_m*(1+zmid)**3 + Omega_k*(1+zmid)**2 + Omega_L) * delta_z
 	return (tau_dust)
-z_f = [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0]
+#z_f = [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0]
 #ax = plt.gca()
-for j in range (20):
-	plt.scatter(z_f[j],1.086*tau_meandust(wavelength_V,n,0,z_f[j]))
+#for j in range (20):
+#	plt.scatter(z_f[j],1.086*tau_meandust(wavelength_V,n,0,z_f[j]))
 #	print(z_f[j],1.086*tau_meandust(wavelength_V,n,0,z_f[j]))
-plt.yscale('log')
-plt.show()
-#print(PSetNL.spectral_n(0.3,10))
-#plt.semilogx(PSetNL.k_array,PSetNL.spectral_n(0.3,PSetNL.k_array).T)
-#plt.semilogx(PSetLin.k_array,PSetLin.spectral_n(0.3,PSetLin.k_array).T)
+#plt.yscale('log')
 #plt.show()
+
+##Building reduced shear model
+def reduced_shear(z_ini,l_tripleprime_max,z_alpha,z_beta,l_mag,l_phi):
+	shear = 0
+	#redshift integral from 0 to Chi(z_alpha)
+	for i in range (n):
+		delta_z = (distance(z_alpha)-z_ini)/n
+		zi = (z_ini + i*delta_z)
+		zmid = 1/2*(zi + z_ini + (i+1)*delta_z)
+		#lʻʻʻ magnitude integral from 0 to some max
+		for j in range (n):
+			delta_l_tripleprime = (l_tripleprime_max)/n
+			l_tripleprime_j = j*delta_l_tripleprime
+			l_tripleprime_mid = 1/2*(l_tripleprime_j + (j+1)*delta_l_tripleprime)
+			#angular integral for lʻʻʻ from 0 to 2pi
+			for k in range (n):
+				delta_phi = 2*np.pi/n
+				phi_k = k*delta_phi
+				phi_mid = 1/2(phi_k + (k+1)*delta_phi)
+				shear += window_distance(distance(z_ini,zmid),distance(z_ini,z_alpha)) * window_distance(distance(z_ini,zmid),distance(z_ini,z_beta)) * sigma_galaxy*numberdensity_galaxy*tau_g(zmid)*(1+zmid)**(2)*d_h/np.sqrt(Omega_r*(1+zmid)**4 + Omega_m*(1+zmid)**3 + Omega_k*(1+zmid)**2 + Omega_L) * np.cos(2*l_phi - 2*phi_mid) * (9*Omega_m**2*H0**4)/(4*1/(1+zmid)**2) * B_matterspec(zmid,kTriangle(l_mag/distance(z_ini,zmid),l_tripleprime_mid/distance(z_ini,zmid),)) * delta_z * delta_phi * delta_l_tripleprime
+	return (shear)
+
 
