@@ -61,7 +61,7 @@ def distance(z_ini,z_f):
 #print(distance (0.3089,0.6911,0,0,3000,0,0.1,10000))
 
 ##Defining Window Function
-def window_distance(distance1, distance2):
+def window_distance(distance2, distance1):
 	if (distance1 >= distance2):
 		return (1/distance2 - 1/distance1)
 	else:
@@ -375,23 +375,28 @@ def tau_meandust(wavelength,n,z_ini,z_f):
 #plt.show()
 
 ##Building reduced shear model
+z_step = 5
+l_tripleprime_step = 10
+phi_step = 20
 def reduced_shear(z_ini,l_tripleprime_max,z_alpha,z_beta,l_mag,l_phi):
+	sigma_galaxy = np.pi * r_virial**2
 	shear = 0
 	#redshift integral from 0 to Chi(z_alpha)
-	for i in range (n):
+	for i in range (z_step):
 		delta_z = (z_alpha-z_ini)/n
 		zi = (z_ini + i*delta_z)
 		zmid = 1/2*(zi + z_ini + (i+1)*delta_z)
 		#lʻʻʻ magnitude integral from 0 to some max
-		for j in range (n):
+		for j in range (l_tripleprime_step):
 			delta_l_tripleprime = (l_tripleprime_max)/n
 			l_tripleprime_j = j*delta_l_tripleprime
 			l_tripleprime_mid = 1/2*(l_tripleprime_j + (j+1)*delta_l_tripleprime)
 			#angular integral for lʻʻʻ from 0 to 2pi
-			for k in range (n):
+			for k in range (phi_step):
 				delta_phi = 2*np.pi/n
 				phi_k = k*delta_phi
 				phi_mid = 1/2*(phi_k + (k+1)*delta_phi)
+				print(i,j,k)
 				shear += window_distance(distance(z_ini,zmid),distance(z_ini,z_alpha)) * window_distance(distance(z_ini,zmid),distance(z_ini,z_beta)) * sigma_galaxy*numberdensity_galaxy*tau_g(zmid)*(1+zmid)**(2)*d_h/np.sqrt(Omega_r*(1+zmid)**4 + Omega_m*(1+zmid)**3 + Omega_k*(1+zmid)**2 + Omega_L) * np.cos(2*l_phi - 2*phi_mid) * (9*Omega_m**2*H0**4)/(4*1/(1+zmid)**2) * B_matterspec(zmid,kTriangle(l_mag/distance(z_ini,zmid),l_tripleprime_mid/distance(z_ini,zmid),l_phi - phi_mid)) * 1/(2*np.pi)**2 * delta_z * delta_phi * l_tripleprime_mid * delta_l_tripleprime
 	return (shear)
 
