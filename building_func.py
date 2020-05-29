@@ -388,7 +388,7 @@ def reduced_shear(z_ini,l_tripleprime_max,z_alpha,z_beta,l_mag,l_phi):
 		delta_z = (z_alpha-z_ini)/z_step
 		zi = (z_ini + i*delta_z)
 		zmid = 1/2*(zi + z_ini + (i+1)*delta_z)
-		D_mid = distance(z_ini,z_mid)
+		D_mid = distance(z_ini,zmid)
 		#lʻʻʻ magnitude integral from 0 to some max
 		for j in range (l_tripleprime_step):
 			delta_l_tripleprime = (l_tripleprime_max)/l_tripleprime_step
@@ -400,7 +400,16 @@ def reduced_shear(z_ini,l_tripleprime_max,z_alpha,z_beta,l_mag,l_phi):
 				phi_k = k*delta_phi
 				phi_mid = 1/2*(phi_k + (k+1)*delta_phi)
 				shear += window_distance(D_mid,D_alpha) * window_distance(D_mid,D_beta) * sigma_galaxy*numberdensity_galaxy*tau_g(zmid)*(1+zmid)**(2)*d_h/np.sqrt(Omega_r*(1+zmid)**4 + Omega_m*(1+zmid)**3 + Omega_k*(1+zmid)**2 + Omega_L) * np.cos(2*l_phi - 2*phi_mid) * (9*Omega_m**2*d_h**(-4))/(4 *1/(1+zmid)**2) * B_matterspec(zmid,kTriangle(l_mag/D_mid,l_tripleprime_mid/D_mid,l_phi - phi_mid)) * 1/(2*np.pi)**2 * delta_z * delta_phi * l_tripleprime_mid * delta_l_tripleprime
-				print(i,j,k,shear)
+				#print(i,j,k,shear)
 	return (shear)
 
-print(reduced_shear(0,10000,1,1,1000,0.6*np.pi))
+#print(reduced_shear(0,10000,1,1,1000,0.6*np.pi))
+
+log_l_array = np.logspace(1,4,300)
+for j in range (300):
+	plt.scatter(log_l_array[j],reduced_shear(0,10000,1,1,log_l_array[j],0))
+	#plt.loglog(log_l_array[j],reduced_shear(0,10000,1,1,log_l_array[j],0))
+	print(log_l_array[j],reduced_shear(0,10000,1,1,log_l_array[j],0))
+plt.xscale('log')
+plt.yscale('log')
+plt.show()
