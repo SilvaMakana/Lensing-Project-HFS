@@ -405,11 +405,12 @@ def reduced_shear(z_ini,l_tripleprime_max,z_alpha,z_beta,l_mag,l_phi):
 
 #print(reduced_shear(0,10000,1,1,1000,0.6*np.pi))
 
-log_l_array = np.logspace(1,4,300)
+log_l_array = np.logspace(1,4,100)
 for j in range (300):
-	plt.scatter(log_l_array[j],reduced_shear(0,10000,1,1,log_l_array[j],0))
+	reduced_shear_value = reduced_shear(0,10000,1,1,log_l_array[j],0)[0,0]
+	plt.scatter(log_l_array[j],reduced_shear_value)
+	print(log_l_array[j],reduced_shear_value)
 	#plt.loglog(log_l_array[j],reduced_shear(0,10000,1,1,log_l_array[j],0))
-	print(log_l_array[j],reduced_shear(0,10000,1,1,log_l_array[j],0))
 plt.xscale('log')
 plt.yscale('log')
 plt.show()
