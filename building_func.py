@@ -394,19 +394,19 @@ def reduced_shear(z_ini,l_tripleprime_max,z_alpha,z_beta,l_mag,l_phi):
 			delta_l_tripleprime = (l_tripleprime_max)/l_tripleprime_step
 			l_tripleprime_j = j*delta_l_tripleprime
 			l_tripleprime_mid = 1/2*(l_tripleprime_j + (j+1)*delta_l_tripleprime)
-			#angular integral for lʻʻʻ from 0 to 2pi
+			#angular integral for lʻʻʻ from 0 to pi FOR THE SPECIAL CASE l_phi = 0 rad!!
 			for k in range (phi_step):
-				delta_phi = 2*np.pi/phi_step
+				delta_phi = np.pi/phi_step
 				phi_k = k*delta_phi
 				phi_mid = 1/2*(phi_k + (k+1)*delta_phi)
-				shear += window_distance(D_mid,D_alpha) * window_distance(D_mid,D_beta) * sigma_galaxy*numberdensity_galaxy*tau_g(zmid)*(1+zmid)**(2)*d_h/np.sqrt(Omega_r*(1+zmid)**4 + Omega_m*(1+zmid)**3 + Omega_k*(1+zmid)**2 + Omega_L) * np.cos(2*l_phi - 2*phi_mid) * (9*Omega_m**2*d_h**(-4))/(4 *1/(1+zmid)**2) * B_matterspec(zmid,kTriangle(l_mag/D_mid,l_tripleprime_mid/D_mid,l_phi - phi_mid)) * 1/(2*np.pi)**2 * delta_z * delta_phi * l_tripleprime_mid * delta_l_tripleprime
+				shear += 2*window_distance(D_mid,D_alpha) * window_distance(D_mid,D_beta) * sigma_galaxy*numberdensity_galaxy*tau_g(zmid)*(1+zmid)**(2)*d_h/np.sqrt(Omega_r*(1+zmid)**4 + Omega_m*(1+zmid)**3 + Omega_k*(1+zmid)**2 + Omega_L) * np.cos(2*l_phi - 2*phi_mid) * (9*Omega_m**2*d_h**(-4))/(4 *1/(1+zmid)**2) * B_matterspec(zmid,kTriangle(l_mag/D_mid,l_tripleprime_mid/D_mid,l_phi - phi_mid)) * 1/(2*np.pi)**2 * delta_z * delta_phi * l_tripleprime_mid * delta_l_tripleprime
 				#print(i,j,k,shear)
 	return (shear)
 
 #print(reduced_shear(0,10000,1,1,1000,0.6*np.pi))
 
 log_l_array = np.logspace(1,4,100)
-for j in range (300):
+for j in range (100):
 	reduced_shear_value = reduced_shear(0,10000,1,1,log_l_array[j],0)[0,0]
 	plt.scatter(log_l_array[j],reduced_shear_value)
 	print(log_l_array[j],reduced_shear_value)
