@@ -430,6 +430,7 @@ def tau_meandust(wavelength,n,z_ini,z_f):
 ##Building Halo Model Matter Bispectrum
 
 #Input paramters ??
+n_M = 41
 M_halo_virial = 1 
 critical_density_parameter = 1.68 #value of a spherical overdensity at which it collapses for Einstein de-Sitter Model
 rho_background_matter = 1 #background density of matter
@@ -443,14 +444,19 @@ def r_halo_virial(M):
 
 
 #halo mass array from 10**8 M_S to 10**16 M_S
-M_halo_array = np.logspace(8,16,41)
+M_halo_array = np.logspace(8,16,n_M)
 
 #density profile for general dark matter profiles
 def rho_halo(r):
 	return(rho_characteristic/((r/r_s)**(-alpha)*(1 + r/r_s)**(3 + alpha)))
 
 #rms fluctuation within a top-hat filter at the virial radius corresponding to mass M
-sigma_halo_interp = interp2d(PSetLin.z_array,M_halo_array,sigma(PSetLin.z_array,kstart,kend,r_halo_virial(M_halo_array),n),kind = "cubic")
+sigma_halo_array = np.zeros((n_M,n_z)) #empty array that has rows of mass entries from M_halo_array and columns of z entries from PSetLin.z_array
+#for loop to fill in the rows of sigma_halo_array
+for i in range(n_M):
+	sigma_halo_array[i,:] = sigma(PSetLin.z_array,kstart,kend,r_halo_virial(M_halo_array[i]),n)
+#Interpolated function for sigma of z and M
+sigma_halo_interp = interp2d(PSetLin.z_array,M_halo_array,sigma_halo_array,kind = "cubic")
 
 
 #mass function
