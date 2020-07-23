@@ -450,7 +450,7 @@ def rho_halo(r):
 	return(rho_characteristic/((r/r_s)**(-alpha)*(1 + r/r_s)**(3 + alpha)))
 
 #rms fluctuation within a top-hat filter at the virial radius corresponding to mass M
-sigma_halo_interp = interp1d(PSetLin.z_array,sigma(PSetLin.z_array,M_halo_array,kstart,kend,r_halo_virial(M_halo_array),n),kind = "cubic")
+sigma_halo_interp = interp2d(PSetLin.z_array,M_halo_array,sigma(PSetLin.z_array,kstart,kend,r_halo_virial(M_halo_array),n),kind = "cubic")
 
 
 #mass function
