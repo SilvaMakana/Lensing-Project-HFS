@@ -3,6 +3,7 @@ import numpy as np
 from scipy import optimize
 import matplotlib.pyplot as plt
 import pandas as pd
+from math import e
 from scipy.interpolate import interp2d, interp1d,InterpolatedUnivariateSpline,RectBivariateSpline
 ## kstart is the first k value from the CLASS output files in units of h^-1Mpc ##
 kstart = 1.045e-5
@@ -241,7 +242,8 @@ def C_transfer(k):
 	return(14.2 + 731/(1+62.5*q_transfer(k)))
 
 def Transfer(k):
-	return(L_transfer(k)/(L_transfer(k) + C_transfer(k)*q_transfer(k)**2))
+	L_transfer1 = L_transfer(k)
+	return(L_transfer1/(L_transfer1 + C_transfer(k)*q_transfer(k)**2))
 
 
 ##Defining spectral_n(z,k) such that n does NOT produce wiggles from the equations in arXiv:astro-ph/9709112, so we are smoothing it out##
@@ -268,33 +270,42 @@ a4 = 1
 a5 = 2
 a6 = -0.2
 
-#defining Window function for sigma_8
-R = 8.0 #in units of h^-1 MpC
-def window(k):
+#defining Window function for sigma_8 as a function of wavenumber (k [Mpc^-1]) and size of the sphere (R [Mpc])
+R_8 = 8 #by definition of sigma_8 function, radius of sphere is 8 Mpc
+def window(k,R):
 	return 3/(R**3)*(np.sin(k*R) - k*R*np.cos(k*R))/k**3
 
 #defining sigma_8 function
-def sigma_8(z,kstart,kend,n): #Sigma_8 cosmological function of redshift, z
+def sigma(z,kstart,kend,R,n): #Sigma cosmological function of redshift, z
 	Ai = 0
 	for i in range (n):
 		delta_k = (kend-kstart)/n
 		#k_i = (kstart + i*delta_k)
 		#thetamid = 1/2*(theta_i + starttheta + (i+1)*delta_theta)
 		kmid = kstart + (2*i + 1)/2 * delta_k
-		Ai += kmid**2*PSetLin.P_interp(z,kmid)[0,0]*window(kmid)**2
+		Ai += kmid**2*PSetLin.P_interp(z,kmid)[:,0]*window(kmid,R)**2
 		#if i<1000:
 			#print('{:4d} {:11.5e} {:11.5e} {:11.5e} {:11.5e}'.format(i,kmid,PSetLin.P_interp(z,kmid)[0,0],window(kmid),Ai))
 	return np.sqrt(Ai/(2*np.pi**2)*delta_k)
+
+sigma_8_interp = interp1d(PSetLin.z_array,sigma(PSetLin.z_array,kstart,kend,R_8,n),kind = "cubic")
 
 #defining parameter functions from arXiv:1111.4477v2
 def Q3(z,k):
 	return ((4 - 2**spectral_n_nowiggle(k))/(1 + 2**(spectral_n_nowiggle(k) + 1)))
 def perturb_a(z,k):
-	return (1 + sigma_8(z,kstart,kend,n)**a6 * (0.7*Q3(z,k))**0.5 * (q_nonlin(z,k)*a1)**(spectral_n_nowiggle(k) + a2))/ (1 + (q_nonlin(z,k)*a1)**(spectral_n_nowiggle(k) + a2))
+	spectral_n_nowiggle1 = spectral_n_nowiggle(k)
+	q_nonlin1 = q_nonlin(z,k)
+	Q31 = (4 - 2**spectral_n_nowiggle1)/(1 + 2**(spectral_n_nowiggle1 + 1))
+	return (1 + sigma_8_interp(z)**a6 * (0.7*Q31)**0.5 * (q_nonlin1*a1)**(spectral_n_nowiggle1 + a2))/ (1 + (q_nonlin1*a1)**(spectral_n_nowiggle1 + a2))
 def perturb_b(z,k):
-	return (1 + 0.2*a3*(spectral_n_nowiggle(k)+3)*q_nonlin(z,k)**(spectral_n_nowiggle(k)+3))/(1 + q_nonlin(z,k)**(spectral_n_nowiggle(k)+3.5))
+	spectral_n_nowiggle1 = spectral_n_nowiggle(k)
+	q_nonlin1 = q_nonlin(z,k)
+	return (1 + 0.2*a3*(spectral_n_nowiggle1+3)*q_nonlin1**(spectral_n_nowiggle1+3))/(1 + q_nonlin1**(spectral_n_nowiggle1+3.5))
 def perturb_c(z,k):
-	return ((1 + 4.5*a4/((1.5 + (spectral_n_nowiggle(k) +3)**4))*(q_nonlin(z,k)*a5)**(spectral_n_nowiggle(k) + 3)))/(1 + (q_nonlin(z,k)*a5)**(spectral_n_nowiggle(k) + 3.5))
+	spectral_n_nowiggle1 = spectral_n_nowiggle(k)
+	q_nonlin1 = q_nonlin(z,k)
+	return ((1 + 4.5*a4/((1.5 + (spectral_n_nowiggle1 +3)**4))*(q_nonlin1*a5)**(spectral_n_nowiggle1 + 3)))/(1 + (q_nonlin1*a5)**(spectral_n_nowiggle1 + 3.5))
 
 #print(Q3(1.0,0.08),perturb_a(1.0,0.08),perturb_b(1.0,0.08),perturb_c(1.0,0.08))
 #sys.exit()
@@ -374,43 +385,100 @@ def tau_meandust(wavelength,n,z_ini,z_f):
 #plt.yscale('log')
 #plt.show()
 
-##Building reduced shear model
-z_step = 5
-l_tripleprime_step = 10
-phi_step = 20
-def reduced_shear(z_ini,l_tripleprime_max,z_alpha,z_beta,l_mag,l_phi):
-	sigma_galaxy = np.pi * r_virial**2
-	shear = 0
-	D_alpha = distance(z_ini,z_alpha)
-	D_beta = distance(z_ini,z_beta)
-	#redshift integral from 0 to Chi(z_alpha)
-	for i in range (z_step):
-		delta_z = (z_alpha-z_ini)/z_step
-		zi = (z_ini + i*delta_z)
-		zmid = 1/2*(zi + z_ini + (i+1)*delta_z)
-		D_mid = distance(z_ini,zmid)
+##Building reduced shear model with Matter Bispectrum model from perturbation theory
+#z_step = 80
+#l_tripleprime_step = 160
+#phi_step = 160
+#def reduced_shear(z_ini,l_tripleprime_max,z_alpha,z_beta,l_mag,l_phi):
+#	sigma_galaxy = np.pi * r_virial**2
+#	shear = 0
+#	D_alpha = distance(z_ini,z_alpha)
+#	D_beta = distance(z_ini,z_beta)
+#	#redshift integral from 0 to Chi(z_alpha)
+#	for i in range (z_step):
+#		delta_z = (z_alpha-z_ini)/z_step
+#		zi = (z_ini + i*delta_z)
+#		zmid = 1/2*(zi + z_ini + (i+1)*delta_z)
+#		D_mid = distance(z_ini,zmid)
 		#lʻʻʻ magnitude integral from 0 to some max
-		for j in range (l_tripleprime_step):
-			delta_l_tripleprime = (l_tripleprime_max)/l_tripleprime_step
-			l_tripleprime_j = j*delta_l_tripleprime
-			l_tripleprime_mid = 1/2*(l_tripleprime_j + (j+1)*delta_l_tripleprime)
+#		for j in range (l_tripleprime_step):
+#			delta_l_tripleprime = (l_tripleprime_max)/l_tripleprime_step
+#			l_tripleprime_j = j*delta_l_tripleprime
+#			l_tripleprime_mid = 1/2*(l_tripleprime_j + (j+1)*delta_l_tripleprime)
 			#angular integral for lʻʻʻ from 0 to pi FOR THE SPECIAL CASE l_phi = 0 rad!!
-			for k in range (phi_step):
-				delta_phi = np.pi/phi_step
-				phi_k = k*delta_phi
-				phi_mid = 1/2*(phi_k + (k+1)*delta_phi)
-				shear += 2*window_distance(D_mid,D_alpha) * window_distance(D_mid,D_beta) * sigma_galaxy*numberdensity_galaxy*tau_g(zmid)*(1+zmid)**(2)*d_h/np.sqrt(Omega_r*(1+zmid)**4 + Omega_m*(1+zmid)**3 + Omega_k*(1+zmid)**2 + Omega_L) * np.cos(2*l_phi - 2*phi_mid) * (9*Omega_m**2*d_h**(-4))/(4 *1/(1+zmid)**2) * B_matterspec(zmid,kTriangle(l_mag/D_mid,l_tripleprime_mid/D_mid,l_phi - phi_mid)) * 1/(2*np.pi)**2 * delta_z * delta_phi * l_tripleprime_mid * delta_l_tripleprime
+#			for k in range (phi_step):
+#				delta_phi = np.pi/phi_step
+#				phi_k = k*delta_phi
+#				phi_mid = 1/2*(phi_k + (k+1)*delta_phi)
+#				shear += 2*window_distance(D_mid,D_alpha) * window_distance(D_mid,D_beta) * sigma_galaxy*numberdensity_galaxy*tau_g(zmid)*(1+zmid)**(2)*d_h/np.sqrt(Omega_r*(1+zmid)**4 + Omega_m*(1+zmid)**3 + Omega_k*(1+zmid)**2 + Omega_L) * np.cos(2*l_phi - 2*phi_mid) * (9*Omega_m**2*d_h**(-4))/(4 *1/(1+zmid)**2) * B_matterspec(zmid,kTriangle(l_mag/D_mid,l_tripleprime_mid/D_mid,l_phi - phi_mid)) * 1/(2*np.pi)**2 * delta_z * delta_phi * l_tripleprime_mid * delta_l_tripleprime
 				#print(i,j,k,shear)
-	return (shear)
+#	return (shear)
 
 #print(reduced_shear(0,10000,1,1,1000,0.6*np.pi))
-
-log_l_array = np.logspace(1,4,100)
-for j in range (100):
-	reduced_shear_value = reduced_shear(0,10000,1,1,log_l_array[j],0)[0,0]
-	plt.scatter(log_l_array[j],reduced_shear_value)
-	print(log_l_array[j],reduced_shear_value)
+#if __name__ == '__main__':
+#	log_l_array = np.logspace(1,4,100)
+#	for j in range (100):
+#		reduced_shear_value = reduced_shear(0,10000,1,1,log_l_array[j],0)[0,0]
+#		plt.scatter(log_l_array[j],reduced_shear_value)
+#		print(log_l_array[j],reduced_shear_value)
 	#plt.loglog(log_l_array[j],reduced_shear(0,10000,1,1,log_l_array[j],0))
-plt.xscale('log')
-plt.yscale('log')
-plt.show()
+#	plt.xscale('log')
+#	plt.yscale('log')
+#	plt.show()
+
+
+##Building Halo Model Matter Bispectrum
+
+#Input paramters ??
+M_halo_virial = 1 
+critical_density_parameter = 1.68 #value of a spherical overdensity at which it collapses
+rho_background_matter = 1 #background density of matter
+r_s = 1    #scale radius
+rho_characteristic = 1
+alpha = -1 ## NFW Halo Profile
+
+#computing virial radius from input parameters
+r_halo_virial = (3*M_halo_virial/(4*np.pi*critical_density_parameter*rho_background_matter))**(1/3)
+
+#density profile for general dark matter profiles
+def rho_halo(r):
+	return(rho_characteristic/((r/r_s)**(-alpha)*(1 + r/r_s)**(3 + alpha)))
+
+#rms fluctuation within a top-hat filter at the virial radius corresponding to mass M
+sigma_halo_interp = interp1d(PSetLin.z_array,sigma(PSetLin.z_array,kstart,kend,r_halo_virial,n),kind = "cubic")
+
+
+#mass function
+a_halo = 0.707
+p_halo = 0.3
+def f_halo_mass(M_halo_virial):
+	nu_halo = critical_density_parameter/sigma_halo_interp(z)
+	nu_a = a_halo*nu_halo
+	return((1+nu_a**(-p_halo))*nu_a**(1/2)*e**(-nu_a/2)/nu_halo)
+
+#dark matter distribution function
+#def halo_distribution_function():
+
+#dimesionaless Fourier Transform of density profile
+def y_halo_parameter(k):
+	y_halo = 0
+	for i in range(n):
+		delta_r_halo = r_halo_virial/n
+		r_halo_i = delta_r_halo*i
+		r_halo_mid = 1/2*(r_halo_i + (i+1)*delta_r_halo)
+		y_halo += 1/M_halo_virial * 4*np.pi*r_halo_mid**2 * rho_halo(r_halo_mid) * np.sin(k*r_halo_mid)/(k*r_halo_mid) *delta_r_halo
+	return(y_halo)
+
+#halo bias parameters
+#bias parameter 1
+def bias_parameter_1(z):
+	return(1 + (a_halo*nu_halo**2-1)/critical_density_parameter + 2*p_halo/(critical_density_parameter*(1 + (a_halo*nu_halo**2)**p_halo)))
+
+#bias parameter 2
+def bias_parameter_2(z):
+	return(8/21*(bias_parameter_1(z)-1) + (nu_halo**2 - 3)/sigma_halo_interp(z)**2 + 2*p_halo/((critical_density_parameter**2)*(1 + (a_halo*nu_halo**2)**p_halo))*(2*p_halo + 2*a_halo*nu_halo**2 -1))
+
+
+
+
+
