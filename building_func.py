@@ -431,27 +431,32 @@ def tau_meandust(wavelength,n,z_ini,z_f):
 
 #Input paramters ??
 M_halo_virial = 1 
-critical_density_parameter = 1.68 #value of a spherical overdensity at which it collapses
+critical_density_parameter = 1.68 #value of a spherical overdensity at which it collapses for Einstein de-Sitter Model
 rho_background_matter = 1 #background density of matter
 r_s = 1    #scale radius
 rho_characteristic = 1
-alpha = -1 ## NFW Halo Profile
+alpha = -1 # NFW Halo Profile
 
 #computing virial radius from input parameters
-r_halo_virial = (3*M_halo_virial/(4*np.pi*critical_density_parameter*rho_background_matter))**(1/3)
+def r_halo_virial(M):
+	return((3*M/(4*np.pi*critical_density_parameter*rho_background_matter))**(1/3))
+
+
+#halo mass array from 10**8 M_S to 10**16 M_S
+M_halo_array = np.logspace(8,16,41)
 
 #density profile for general dark matter profiles
 def rho_halo(r):
 	return(rho_characteristic/((r/r_s)**(-alpha)*(1 + r/r_s)**(3 + alpha)))
 
 #rms fluctuation within a top-hat filter at the virial radius corresponding to mass M
-sigma_halo_interp = interp1d(PSetLin.z_array,sigma(PSetLin.z_array,kstart,kend,r_halo_virial,n),kind = "cubic")
+sigma_halo_interp = interp1d(PSetLin.z_array,sigma(PSetLin.z_array,M_halo_array,kstart,kend,r_halo_virial(M_halo_array),n),kind = "cubic")
 
 
 #mass function
 a_halo = 0.707
 p_halo = 0.3
-def f_halo_mass(M_halo_virial):
+def f_halo_mass(z):
 	nu_halo = critical_density_parameter/sigma_halo_interp(z)
 	nu_a = a_halo*nu_halo
 	return((1+nu_a**(-p_halo))*nu_a**(1/2)*e**(-nu_a/2)/nu_halo)
