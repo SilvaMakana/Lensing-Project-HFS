@@ -434,13 +434,13 @@ n_M = 41
 M_halo_virial = 1 
 critical_density_parameter = 1.68 #value of a spherical overdensity at which it collapses for Einstein de-Sitter Model
 rho_background_matter = 1 #background density of matter
-r_s = 1    #scale radius
+r_s = 1    #scale radius depends on concentraction, c, so write this in terms of c and r_virial
 rho_characteristic = 1
 alpha = -1 # NFW Halo Profile
 
 #computing virial radius from input parameters
 def r_halo_virial(M):
-	return((3*M/(4*np.pi*critical_density_parameter*rho_background_matter))**(1/3))
+	return((3*M/(4*np.pi*rho_background_matter))**(1/3))
 
 
 #halo mass array from 10**8 M_S to 10**16 M_S
@@ -450,8 +450,10 @@ M_halo_array = np.logspace(8,16,n_M)
 def rho_halo(r):
 	return(rho_characteristic/((r/r_s)**(-alpha)*(1 + r/r_s)**(3 + alpha)))
 
-#rms fluctuation within a top-hat filter at the virial radius corresponding to mass M
-sigma_halo_array = np.zeros((n_M,n_z)) #empty array that has rows of mass entries from M_halo_array and columns of z entries from PSetLin.z_array
+#building rms fluctuation within a top-hat filter at the virial radius corresponding to mass M
+#empty array that has rows of mass entries from M_halo_array and columns of z entries from PSetLin.z_array
+sigma_halo_array = np.zeros((n_M,n_z))
+
 #for loop to fill in the rows of sigma_halo_array
 for i in range(n_M):
 	sigma_halo_array[i,:] = sigma(PSetLin.z_array,kstart,kend,r_halo_virial(M_halo_array[i]),n)
@@ -462,16 +464,27 @@ sigma_halo_interp = interp2d(PSetLin.z_array,M_halo_array,sigma_halo_array,kind 
 #mass function
 a_halo = 0.707
 p_halo = 0.3
-def f_halo_mass(z):
-	nu_halo = critical_density_parameter/sigma_halo_interp(z)
+def f_halo_mass(z,M):
+	nu_halo = (critical_density_parameter/sigma_halo_interp(z,M))**2
 	nu_a = a_halo*nu_halo
 	return((1+nu_a**(-p_halo))*nu_a**(1/2)*e**(-nu_a/2)/nu_halo)
+
+#defining mass scale for when nu_halo(M_scale) = 1
+def scale_M_critical(z,M):
+	return((critical_density_parameter/sigma_halo_interp(z,M))- 1)
+
+def M_halo_critical(z):
+	return optimize.root_scalar(lambda M: scale_M_critical(z,M),bracket=[10**8,10**16],method ='brentq')
+
+print(M_halo_critical(2))
+sys.exit()
+
 
 #dark matter distribution function
 #def halo_distribution_function():
 
 #dimesionaless Fourier Transform of density profile
-def y_halo_parameter(k):
+def y_halo_parameter(k,z,M):
 	y_halo = 0
 	for i in range(n):
 		delta_r_halo = r_halo_virial/n
