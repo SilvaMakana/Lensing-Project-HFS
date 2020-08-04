@@ -488,7 +488,7 @@ p_halo = 0.3
 def f_halo_mass(z,M):
 	nu_halo = (critical_density_parameter/sigma_halo_interp(z,M))**2
 	nu_a = a_halo*nu_halo
-	return((1+nu_a**(-p_halo))*nu_a**(1/2)*e**(-nu_a/2)/nu_halo)
+	return(1/7.25396*(1+nu_a**(-p_halo))*nu_a**(1/2)*e**(-nu_a/2)/nu_halo)
 
 
 #dark matter distribution function
