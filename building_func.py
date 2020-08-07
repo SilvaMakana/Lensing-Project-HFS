@@ -431,7 +431,7 @@ def tau_meandust(wavelength,n,z_ini,z_f):
 ##Building Halo Model Matter Bispectrum
 
 #Input paramters ??
-n_M = 41
+n_M = 31
 M_halo_virial = 1 
 critical_density_parameter = 1.68 #value of a spherical overdensity at which it collapses for Einstein de-Sitter Model
 rho_background_matter = Omega_m * rho_critial #background density of matter
@@ -457,43 +457,48 @@ sigma_halo_interp = interp2d(PSetLin.z_array,M_halo_array,sigma_halo_array,kind 
 
 #defining mass scale for when nu_halo(M_scale) = 1
 def scale_M_critical(z,M):
-	return((critical_density_parameter/sigma_halo_interp(z,M))**2 - 1)
+	return((critical_density_parameter/sigma_halo_interp(z,M)[0])**2 - 1)
 
 def M_halo_critical(z):
 	return optimize.root_scalar(lambda M: scale_M_critical(z,M),bracket=[10**8,10**16],method ='brentq')
 
 #defining concentration as a function of M and redshift
-def c_concentration(M,z):
-	return(10*(M/M_halo_critical(z))**(-0.2))
+def c_concentration(z,M):
+	return(10*(M/M_halo_critical(z).root)**(-0.2))
 
 #virial radius in terms of lagrangian radius
 def r_halo_virial(M):
 	return(1/(200)**(1/3)*r_halo_lagrangian(M))
 
 #defining characteristic radius
-def r_characteristic(M,z):
-	return(r_halo_virial/c_concentration(M,z))
+def r_characteristic(z,M):
+	return(r_halo_virial(M)/c_concentration(z,M))
 
-def rho_characteristic(M,z):
-	return(M/(4*np.pi*r_characteristic(M,z)**3*(np.log10(1+c_concentration(M,z))-c_concentration(M,z)/(1-c_concentration(M,z)))))
+def rho_characteristic(z,M):
+	return(M/(4*np.pi*r_characteristic(z,M)**3*(np.log10(1+c_concentration(z,M))-c_concentration(z,M)/(1-c_concentration(z,M)))))
 
 #density profile for general dark matter profiles
-def rho_halo(r,M,z):
-	return(rho_characteristic(M,z)/((r/r_characteristic(M,z))**(-alpha)*(1 + r/r_characteristic(M,z))**(3 + alpha)))
+def rho_halo(r,z,M):
+	return(rho_characteristic(z,M)/((r/r_characteristic(z,M))**(-alpha)*(1 + r/r_characteristic(z,M))**(3 + alpha)))
 
 
 #mass function
 a_halo = 0.707
 p_halo = 0.3
 def f_halo_mass(z,M):
-	nu_halo = (critical_density_parameter/sigma_halo_interp(z,M))**2
+	nu_halo = (critical_density_parameter/sigma_halo_interp(z,M)[0])**2
 	nu_a = a_halo*nu_halo
 	return(1/7.25396*(1+nu_a**(-p_halo))*nu_a**(1/2)*e**(-nu_a/2)/nu_halo)
 
-
+#defining the derivative of nu_halo w.r.t to M (mass)
+def dnu_dM(z,M):
+	anti_dnu_dM = RectBivariateSpline(PSetLin.z_array,M_halo_array,sigma_halo_array,kx=3,ky=3)
+	return(anti_dnu_dM(z,M,dy=1))
 #dark matter distribution function
-#def halo_distribution_function():
+def halo_distribution_function(z,M):
+	return(rho_background_matter/M*f_halo_mass(z,M)*dnu_dM(z,M))
 
+#print(halo_distribution_function(2,10**10))
 #dimesionaless Fourier Transform of density profile
 def y_halo_parameter(k,z,M):
 	y_halo = 0
@@ -501,17 +506,20 @@ def y_halo_parameter(k,z,M):
 		delta_r_halo = r_halo_virial(M)/n
 		r_halo_i = delta_r_halo*i
 		r_halo_mid = 1/2*(r_halo_i + (i+1)*delta_r_halo)
-		y_halo += 1/M * 4*np.pi*r_halo_mid**2 * rho_halo(r_halo_mid,M,z) * np.sin(k*r_halo_mid)/(k*r_halo_mid) *delta_r_halo
+		y_halo += 1/M * 4*np.pi*r_halo_mid**2 * rho_halo(r_halo_mid,z,M) * np.sin(k*r_halo_mid)/(k*r_halo_mid) *delta_r_halo
 	return(y_halo)
-
+print(y_halo_parameter(10,2,10**9))
 #halo bias parameters
 #bias parameter 1
-def bias_parameter_1(z):
-	return(1 + (a_halo*nu_halo**2-1)/critical_density_parameter + 2*p_halo/(critical_density_parameter*(1 + (a_halo*nu_halo**2)**p_halo)))
-
+def bias_parameter_1(z,M):
+	nu_halo = (critical_density_parameter/sigma_halo_interp(z,M)[0])**2
+	return(1 + (a_halo*nu_halo-1)/critical_density_parameter + 2*p_halo/(critical_density_parameter*(1 + (a_halo*nu_halo)**p_halo)))
+print(bias_parameter_1(2,10**8))
 #bias parameter 2
-def bias_parameter_2(z):
-	return(8/21*(bias_parameter_1(z)-1) + (nu_halo**2 - 3)/sigma_halo_interp(z)**2 + 2*p_halo/((critical_density_parameter**2)*(1 + (a_halo*nu_halo**2)**p_halo))*(2*p_halo + 2*a_halo*nu_halo**2 -1))
+def bias_parameter_2(z,M):
+	nu_halo = (critical_density_parameter/sigma_halo_interp(z,M)[0])**2
+	return(8/21*(bias_parameter_1(z,M)-1) + (nu_halo - 3)/sigma_halo_interp(z,M)[0]**2 + 2*p_halo/((critical_density_parameter**2)*(1 + (a_halo*nu_halo)**p_halo))*(2*p_halo + 2*a_halo*nu_halo -1))
+print(bias_parameter_2(2,10**8))
 
 
 
