@@ -492,8 +492,8 @@ def f_halo_mass(z,M):
 
 #defining the derivative of nu_halo w.r.t to M (mass)
 def dnu_dM(z,M):
-	anti_dnu_dM = critical_density_parameter/RectBivariateSpline(PSetLin.z_array,M_halo_array,sigma_halo_array,kx=3,ky=3)
-	return(critical_density_parameter/RectBivariateSpline(PSetLin.z_array,M_halo_array,sigma_halo_array,kx=3,ky=3)**2*anti_dnu_dM(z,M,dy=1))
+	anti_dnu_dM = (critical_density_parameter/RectBivariateSpline(PSetLin.z_array,M_halo_array,sigma_halo_array,kx=3,ky=3))**2
+	return(-2*critical_density_parameter**2/RectBivariateSpline(PSetLin.z_array,M_halo_array,sigma_halo_array,kx=3,ky=3)**3*anti_dnu_dM(z,M,dy=1))
 #dark matter distribution function
 def halo_distribution_function(z,M):
 	return(rho_background_matter/M*f_halo_mass(z,M)*dnu_dM(z,M))
@@ -514,14 +514,11 @@ print(y_halo_parameter(10,2,10**9))
 def bias_parameter_1(z,M):
 	nu_halo = (critical_density_parameter/sigma_halo_interp(z,M)[0])**2
 	return(1 + (a_halo*nu_halo-1)/critical_density_parameter + 2*p_halo/(critical_density_parameter*(1 + (a_halo*nu_halo)**p_halo)))
-print(bias_parameter_1(2,10**8))
+
 #bias parameter 2
 def bias_parameter_2(z,M):
 	nu_halo = (critical_density_parameter/sigma_halo_interp(z,M)[0])**2
 	return(8/21*(bias_parameter_1(z,M)-1) + (nu_halo - 3)/sigma_halo_interp(z,M)[0]**2 + 2*p_halo/((critical_density_parameter**2)*(1 + (a_halo*nu_halo)**p_halo))*(2*p_halo + 2*a_halo*nu_halo -1))
-print(bias_parameter_2(2,10**8))
 
-
-
-
-
+for i in range(8):
+	print(bias_parameter_1(0,10**(i+8)),bias_parameter_2(0,10**(i+8)))
