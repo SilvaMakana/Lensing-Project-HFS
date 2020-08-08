@@ -492,7 +492,7 @@ def f_halo_mass(z,M):
 
 #defining the derivative of nu_halo w.r.t to M (mass)
 def dnu_dM(z,M):
-	anti_dnu_dM = RectBivariateSpline(PSetLin.z_array,M_halo_array,sigma_halo_array,kx=3,ky=3)
+	anti_dnu_dM = critical_density_parameter/RectBivariateSpline(PSetLin.z_array,M_halo_array,sigma_halo_array,kx=3,ky=3)
 	return(anti_dnu_dM(z,M,dy=1))
 #dark matter distribution function
 def halo_distribution_function(z,M):
