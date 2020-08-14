@@ -430,9 +430,8 @@ def tau_meandust(wavelength,n,z_ini,z_f):
 
 ##Building Halo Model Matter Bispectrum
 
-#Input paramters ??
+#Input paramters
 n_M = 31
-M_halo_virial = 1 
 critical_density_parameter = 1.68 #value of a spherical overdensity at which it collapses for Einstein de-Sitter Model
 rho_background_matter = Omega_m * rho_critial #background density of matter
 alpha = -1 # NFW Halo Profile
@@ -475,7 +474,7 @@ def r_characteristic(z,M):
 	return(r_halo_virial(M)/c_concentration(z,M))
 
 def rho_characteristic(z,M):
-	return(M/(4*np.pi*r_characteristic(z,M)**3*(np.log10(1+c_concentration(z,M))-c_concentration(z,M)/(1-c_concentration(z,M)))))
+	return(M/(4*np.pi*r_characteristic(z,M)**3*(np.log(1+c_concentration(z,M))-c_concentration(z,M)/(1+c_concentration(z,M)))))
 
 #density profile for general dark matter profiles
 def rho_halo(r,z,M):
@@ -492,13 +491,14 @@ def f_halo_mass(z,M):
 
 #defining the derivative of nu_halo w.r.t to M (mass)
 def dnu_dM(z,M):
-	anti_dnu_dM = (critical_density_parameter/RectBivariateSpline(PSetLin.z_array,M_halo_array,sigma_halo_array,kx=3,ky=3))**2
-	return(-2*critical_density_parameter**2/RectBivariateSpline(PSetLin.z_array,M_halo_array,sigma_halo_array,kx=3,ky=3)**3*anti_dnu_dM(z,M,dy=1))
+	sigma_again = RectBivariateSpline(PSetLin.z_array,M_halo_array,sigma_halo_array,kx=3,ky=3)
+	anti_dnu_dM = (critical_density_parameter / sigma_again(z,M))**2
+	return(-2*critical_density_parameter**2/sigma_again(z,M)**3 * anti_dnu_dM(z,M,dy=1))
 #dark matter distribution function
 def halo_distribution_function(z,M):
 	return(rho_background_matter/M*f_halo_mass(z,M)*dnu_dM(z,M))
 
-#print(halo_distribution_function(2,10**10))
+print(halo_distribution_function(1,10**9))
 #dimesionaless Fourier Transform of density profile
 def y_halo_parameter(k,z,M):
 	y_halo = 0
@@ -508,7 +508,10 @@ def y_halo_parameter(k,z,M):
 		r_halo_mid = 1/2*(r_halo_i + (i+1)*delta_r_halo)
 		y_halo += 1/M * 4*np.pi*r_halo_mid**2 * rho_halo(r_halo_mid,z,M) * np.sin(k*r_halo_mid)/(k*r_halo_mid) *delta_r_halo
 	return(y_halo)
-print(y_halo_parameter(10,2,10**9))
+
+print(y_halo_parameter(0.0001,1,10**9))
+sys.exit()
+
 #halo bias parameters
 #bias parameter 1
 def bias_parameter_1(z,M):
@@ -520,5 +523,82 @@ def bias_parameter_2(z,M):
 	nu_halo = (critical_density_parameter/sigma_halo_interp(z,M)[0])**2
 	return(8/21*(bias_parameter_1(z,M)-1) + (nu_halo - 3)/sigma_halo_interp(z,M)[0]**2 + 2*p_halo/((critical_density_parameter**2)*(1 + (a_halo*nu_halo)**p_halo))*(2*p_halo + 2*a_halo*nu_halo -1))
 
-for i in range(8):
-	print(bias_parameter_1(0,10**(i+8)),bias_parameter_2(0,10**(i+8)))
+#defining integrals in Eq(5) of https://iopscience.iop.org/article/10.1086/318660/fulltext/
+
+def I_03(z,myTriangle):
+	I03 = 0
+	for i in range(n):
+		delta_M_halo = (10**16 - 10**8)/n
+		M_halo_i = delta_M_halo*i
+		M_halo_mid = 1/2*(M_halo_i + (i+1)*delta_M_halo)
+		I03 += (M_halo_mid/rho_background_matter)**3 * halo_distribution_function(z,M_halo_mid) * y_halo_parameter(myTriangle.k1,z,M_halo_mid) * y_halo_parameter(myTriangle.k2,z,M_halo_mid) * y_halo_parameter(myTriangle.k3,z,M_halo_mid)
+	return(I03)
+
+def I_12(z,myTriangle,i):
+	k1 = myTriangle.k1; k2 = myTriangle.k2
+	if i==1:
+		k1 = myTriangle.k2; k2 = myTriangle.k3
+	if i==2:
+		k1 = myTriangle.k3; k2 = myTriangle.k1
+	I12 = 0
+	for i in range(n):
+		delta_M_halo = (10**16 - 10**8)/n
+		M_halo_i = delta_M_halo*i
+		M_halo_mid = 1/2*(M_halo_i + (i+1)*delta_M_halo)
+		I12 += (M_halo_mid/rho_background_matter)**2 * halo_distribution_function(z,M_halo_mid) * bias_parameter_1(z,M_halo_mid) * y_halo_parameter(k1,z,M_halo_mid) * y_halo_parameter(k2,z,M_halo_mid)
+	return(I12)
+
+def I_11(z,myTriangle,i):
+	k1 = myTriangle.k1
+	if i==1:
+		k1 = myTriangle.k2
+	if i==2:
+		k1 = myTriangle.k3
+	I11 = 0
+	for i in range(n):
+		delta_M_halo = (10**16 - 10**8)/n
+		M_halo_i = delta_M_halo*i
+		M_halo_mid = 1/2*(M_halo_i + (i+1)*delta_M_halo)
+		I11 += (M_halo_mid/rho_background_matter) * halo_distribution_function(z,M_halo_mid) * bias_parameter_1(z,M_halo_mid) * y_halo_parameter(myTriangle.k1,z,M_halo_mid)
+	return(I11)
+
+def I_21(z,myTriangle,i):
+	k1 = myTriangle.k1
+	if i==1:
+		k1 = myTriangle.k2
+	if i==2:
+		k1 = myTriangle.k3
+	I21 = 0
+	for i in range(n):
+		delta_M_halo = (10**16 - 10**8)/n
+		M_halo_i = delta_M_halo*i
+		M_halo_mid = 1/2*(M_halo_i + (i+1)*delta_M_halo)
+		I21 += (M_halo_mid/rho_background_matter) * halo_distribution_function(z,M_halo_mid) * bias_parameter_2(z,M_halo_mid) * y_halo_parameter(myTriangle.k1,z,M_halo_mid)
+	return(I21)
+
+#defining single, double, and triple halo contribution to halo model bispectrum as formulated in https://iopscience.iop.org/article/10.1086/318660/fulltext/
+
+#single halo contribution is simply I_03 function
+
+#double halo contribution
+def double_halo_bispectrum(z,myTriangle):
+	return(I_12(z,myTriangle,0) * I_11(z,myTriangle,2) * PSetNL.P_interp(z,myTriangle.k3) + I_12(z,myTriangle,2) * I_11(z,myTriangle,1) * PSetNL.P_interp(z,myTriangle.k2) + I_12(z,myTriangle,1) * I_11(z,myTriangle,0) * PSetNL.P_interp(z,myTriangle.k1))
+
+#triple halo contribution
+def triple_halo_bispectrum(z,myTriangle):
+	return((2*perturb_F(z,myTriangle,0)*I_11(z,myTriangle,2) + I_21(z,myTriangle,2)) * I_11(z,myTriangle,0)*I_11(z,myTriangle,1)*PSetNL.P_interp(z,myTriangle.k1)*PSetNL.P_interp(z,myTriangle.k2) + (2*perturb_F(z,myTriangle,2)*I_11(z,myTriangle,1) + I_21(z,myTriangle,1)) * I_11(z,myTriangle,2)*I_11(z,myTriangle,0)*PSetNL.P_interp(z,myTriangle.k3)*PSetNL.P_interp(z,myTriangle.k1) + (2*perturb_F(z,myTriangle,1)*I_11(z,myTriangle,0) + I_21(z,myTriangle,0)) * I_11(z,myTriangle,1)*I_11(z,myTriangle,2)*PSetNL.P_interp(z,myTriangle.k2)*PSetNL.P_interp(z,myTriangle.k3))
+
+#permutations for triple_halo_bispectrum
+# first - (2*perturb_F(z,myTriangle,0)*I_11(z,myTriangle,2) + I_21(z,myTriangle,2)) * I_11(z,myTriangle,0)*I_11(z,myTriangle,1)*PSetNL.P_interp(z,myTriangle.k1)*PSetNL.P_interp(z,myTriangle.k2)
+
+# second - (2*perturb_F(z,myTriangle,2)*I_11(z,myTriangle,1) + I_21(z,myTriangle,1)) * I_11(z,myTriangle,2)*I_11(z,myTriangle,0)*PSetNL.P_interp(z,myTriangle.k3)*PSetNL.P_interp(z,myTriangle.k1)
+
+# third - (2*perturb_F(z,myTriangle,1)*I_11(z,myTriangle,0) + I_21(z,myTriangle,0)) * I_11(z,myTriangle,1)*I_11(z,myTriangle,2)*PSetNL.P_interp(z,myTriangle.k2)*PSetNL.P_interp(z,myTriangle.k3)
+
+#total halo bispectrum is the sum of all the individual contribution
+def total_halo_bispectrum(z,myTriangle):
+	return(I_03(z,myTriangle) + double_halo_bispectrum(z,myTriangle) + triple_halo_bispectrum(z,myTriangle))
+
+tri = kTriangle(1,1,0.6*np.pi)
+
+print(total_halo_bispectrum(1,tri))
