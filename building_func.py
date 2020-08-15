@@ -492,8 +492,8 @@ def f_halo_mass(z,M):
 #defining the derivative of nu_halo w.r.t to M (mass)
 def dnu_dM(z,M):
 	sigma_again = RectBivariateSpline(PSetLin.z_array,M_halo_array,sigma_halo_array,kx=3,ky=3)
-	anti_dnu_dM = (critical_density_parameter / sigma_again(z,M))**2
-	return(-2*critical_density_parameter**2/sigma_again(z,M)**3 * anti_dnu_dM(z,M,dy=1))
+	#anti_dnu_dM = (critical_density_parameter / sigma_again)**2
+	return(-2*critical_density_parameter**2/sigma_again(z,M)**3 * sigma_again(z,M,dy=1))
 #dark matter distribution function
 def halo_distribution_function(z,M):
 	return(rho_background_matter/M*f_halo_mass(z,M)*dnu_dM(z,M))
@@ -522,14 +522,15 @@ def bias_parameter_2(z,M):
 	return(8/21*(bias_parameter_1(z,M)-1) + (nu_halo - 3)/sigma_halo_interp(z,M)[0]**2 + 2*p_halo/((critical_density_parameter**2)*(1 + (a_halo*nu_halo)**p_halo))*(2*p_halo + 2*a_halo*nu_halo -1))
 
 #defining integrals in Eq(5) of https://iopscience.iop.org/article/10.1086/318660/fulltext/
-n_halo_integral_step = 10**18
 def I_03(z,myTriangle):
 	I03 = 0
 	for i in range(n_halo_integral_step):
-		delta_M_halo = (10**16 - 10**8)/n_halo_integral_step
-		M_halo_i = delta_M_halo*i
-		M_halo_mid = 1/2*(M_halo_i + (i+1)*delta_M_halo)
-		I03 += (M_halo_mid/rho_background_matter)**3 * halo_distribution_function(z,M_halo_mid) * y_halo_parameter(myTriangle.k1,z,M_halo_mid) * y_halo_parameter(myTriangle.k2,z,M_halo_mid) * y_halo_parameter(myTriangle.k3,z,M_halo_mid)
+		epsilon = (10**16/10**8)**(1/n) - 1
+		delta_M_halo_i = 10**8 * (10**16/10**8)**(i/n)*epsilon
+		#M_halo_i = delta_M_halo*i
+		#M_halo_mid = 1/2*(M_halo_i + (i+1)*delta_M_halo)
+		M_halo_mid = 10**8 * (10**16/10**8)**(i/n) * (1 + epsilon/2)
+		I03 += (M_halo_mid/rho_background_matter)**3 * halo_distribution_function(z,M_halo_mid) * y_halo_parameter(myTriangle.k1,z,M_halo_mid) * y_halo_parameter(myTriangle.k2,z,M_halo_mid) * y_halo_parameter(myTriangle.k3,z,M_halo_mid) *delta_M_halo_i
 	return(I03)
 
 def I_12(z,myTriangle,i):
@@ -543,7 +544,7 @@ def I_12(z,myTriangle,i):
 		delta_M_halo = (10**16 - 10**8)/n_halo_integral_step
 		M_halo_i = delta_M_halo*i
 		M_halo_mid = 1/2*(M_halo_i + (i+1)*delta_M_halo)
-		I12 += (M_halo_mid/rho_background_matter)**2 * halo_distribution_function(z,M_halo_mid) * bias_parameter_1(z,M_halo_mid) * y_halo_parameter(k1,z,M_halo_mid) * y_halo_parameter(k2,z,M_halo_mid)
+		I12 += (M_halo_mid/rho_background_matter)**2 * halo_distribution_function(z,M_halo_mid) * bias_parameter_1(z,M_halo_mid) * y_halo_parameter(k1,z,M_halo_mid) * y_halo_parameter(k2,z,M_halo_mid) * delta_M_halo
 	return(I12)
 
 def I_11(z,myTriangle,i):
@@ -557,7 +558,7 @@ def I_11(z,myTriangle,i):
 		delta_M_halo = (10**16 - 10**8)/n_halo_integral_step
 		M_halo_i = delta_M_halo*i
 		M_halo_mid = 1/2*(M_halo_i + (i+1)*delta_M_halo)
-		I11 += (M_halo_mid/rho_background_matter) * halo_distribution_function(z,M_halo_mid) * bias_parameter_1(z,M_halo_mid) * y_halo_parameter(myTriangle.k1,z,M_halo_mid)
+		I11 += (M_halo_mid/rho_background_matter) * halo_distribution_function(z,M_halo_mid) * bias_parameter_1(z,M_halo_mid) * y_halo_parameter(myTriangle.k1,z,M_halo_mid) * delta_M_halo
 	return(I11)
 
 def I_21(z,myTriangle,i):
@@ -571,7 +572,7 @@ def I_21(z,myTriangle,i):
 		delta_M_halo = (10**16 - 10**8)/n_halo_integral_step
 		M_halo_i = delta_M_halo*i
 		M_halo_mid = 1/2*(M_halo_i + (i+1)*delta_M_halo)
-		I21 += (M_halo_mid/rho_background_matter) * halo_distribution_function(z,M_halo_mid) * bias_parameter_2(z,M_halo_mid) * y_halo_parameter(myTriangle.k1,z,M_halo_mid)
+		I21 += (M_halo_mid/rho_background_matter) * halo_distribution_function(z,M_halo_mid) * bias_parameter_2(z,M_halo_mid) * y_halo_parameter(myTriangle.k1,z,M_halo_mid) * delta_M_halo
 	return(I21)
 
 #defining single, double, and triple halo contribution to halo model bispectrum as formulated in https://iopscience.iop.org/article/10.1086/318660/fulltext/
