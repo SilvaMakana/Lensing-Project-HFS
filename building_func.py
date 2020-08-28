@@ -158,7 +158,7 @@ class kTriangle(object):
 	def __init__(self,in1,in2,in3,input="SAS"):
 		"""if using SAS, then, in1=length of k1, in2=length of k2, in3 = angle in radians between k1 and k2"""
 		"""if using SSS, then, in1=length of k1, in2=length of k2, in3 = length of k3"""
-		if input == "SAS":s
+		if input == "SAS":
 			self.k1 = in1
 			self.k2 = in2
 			self.cos12 = np.cos(in3)
@@ -545,20 +545,21 @@ class halo_info(object):
 			self.bias1_array[i] = bias_parameter_1(self.z,M_halo_mid)
 			self.bias2_array[i] = bias_parameter_2(self.z,M_halo_mid)
 
-
+print(halo_info(0,M_halo_min,M_halo_max,n_halo_integral_step).bias1_array)
 
 
 
 
 def I_03(z,myTriangle):
 	I03 = 0
+	dn_dm[i] = halo_info(z,M_halo_min,M_halo_max,n_halo_integral_step).dn_dm_array
 	for i in range(n_halo_integral_step):
 		epsilon = (M_halo_max/M_halo_min)**(1/n_halo_integral_step) - 1
 		delta_M_halo = M_halo_min* (M_halo_max/M_halo_min)**(i/n_halo_integral_step)*epsilon
 		#M_halo_i = delta_M_halo*i
 		#M_halo_mid = 1/2*(M_halo_i + (i+1)*delta_M_halo)
 		M_halo_mid = M_halo_min * (M_halo_max/M_halo_min)**(i/n_halo_integral_step) * (1 + epsilon/2)
-		I03 += (M_halo_mid/rho_background_matter)**3 * halo_distribution_function(z,M_halo_mid) * y_halo_parameter(myTriangle.k1,z,M_halo_mid) * y_halo_parameter(myTriangle.k2,z,M_halo_mid) * y_halo_parameter(myTriangle.k3,z,M_halo_mid) *delta_M_halo
+		I03 += (M_halo_mid/rho_background_matter)**3 * dn_dm[i] * y_halo_parameter(myTriangle.k1,z,M_halo_mid) * y_halo_parameter(myTriangle.k2,z,M_halo_mid) * y_halo_parameter(myTriangle.k3,z,M_halo_mid) *delta_M_halo
 	return(I03)
 
 
@@ -599,8 +600,8 @@ def I_11(z,myTriangle,i):
 		#print (I11)
 	return(I11)
 
-test_tri = kTriangle(0.0001,0.0001,2/3*np.pi)
-print(I_11(0,test_tri,0))
+#test_tri = kTriangle(0.0001,0.0001,2/3*np.pi)
+#print(I_11(0,test_tri,0))
 
 
 def I_21(z,myTriangle,i):
