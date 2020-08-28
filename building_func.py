@@ -158,7 +158,7 @@ class kTriangle(object):
 	def __init__(self,in1,in2,in3,input="SAS"):
 		"""if using SAS, then, in1=length of k1, in2=length of k2, in3 = angle in radians between k1 and k2"""
 		"""if using SSS, then, in1=length of k1, in2=length of k2, in3 = length of k3"""
-		if input == "SAS":
+		if input == "SAS":s
 			self.k1 = in1
 			self.k2 = in2
 			self.cos12 = np.cos(in3)
@@ -346,38 +346,37 @@ def Q123(z,myTriangle):
 #plt.show()
 
 ##Building Dust Model from  arXiv:0902.4240v1
-wavelength_V = 5.50*10**(-7) #in units of meters
-r_virial = 0.110 #in units of h^-1 Mpc
-numberdensity_galaxy = 0.037 #comoving number density of galaxies in units of h^3 Mpc^-3
+#wavelength_V = 5.50*10**(-7) #in units of meters
+#r_virial = 0.110 #in units of h^-1 Mpc
+#numberdensity_galaxy = 0.037 #comoving number density of galaxies in units of h^3 Mpc^-3
 
 #calling data in from kext_albedo_WD_MW_3.1_60_D03.all found in the website https://www.astro.princeton.edu/~draine/dust/dustmix.html
-cols = ['lambda', 'albedo', '<cos>', 'C_ext/H' , 'K_abs', '<cos^2>', 'comment']
+#cols = ['lambda', 'albedo', '<cos>', 'C_ext/H' , 'K_abs', '<cos^2>', 'comment']
 
-table = pd.read_csv('kext_albedo_WD_MW_3.1_60_D03.all', names=cols, skiprows=78, delim_whitespace=True)
+#table = pd.read_csv('kext_albedo_WD_MW_3.1_60_D03.all', names=cols, skiprows=78, delim_whitespace=True)
 
-#print(table)
 
-wavelength = table['lambda']
-extinction_per_H = table['C_ext/H']
+#wavelength = table['lambda']
+#extinction_per_H = table['C_ext/H']
 
-dust_interp = interp1d(wavelength, extinction_per_H, kind='linear')
+#dust_interp = interp1d(wavelength, extinction_per_H, kind='linear')
 
-tau_g_Vband = 0.005871
+#tau_g_Vband = 0.005871
 
-def tau_g(z):
-	return(tau_g_Vband*dust_interp(wavelength_V*10**(6)/(1+z))/dust_interp(wavelength_V*10**(6)/(1.36)))
+#def tau_g(z):
+#	return(tau_g_Vband*dust_interp(wavelength_V*10**(6)/(1+z))/dust_interp(wavelength_V*10**(6)/(1.36)))
 
 #defining dust model integral
 
-def tau_meandust(wavelength,n,z_ini,z_f):
-	sigma_galaxy = np.pi * r_virial**2
-	tau_dust = 0
-	for i in range (n):
-		delta_z = (z_f-z_ini)/n
-		zi = (z_ini + i*delta_z)
-		zmid = 1/2*(zi + z_ini + (i+1)*delta_z)
-		tau_dust += sigma_galaxy*numberdensity_galaxy*tau_g(zmid)*(1+zmid)**(2)*d_h/np.sqrt(Omega_r*(1+zmid)**4 + Omega_m*(1+zmid)**3 + Omega_k*(1+zmid)**2 + Omega_L) * delta_z
-	return (tau_dust)
+#def tau_meandust(wavelength,n,z_ini,z_f):
+#	sigma_galaxy = np.pi * r_virial**2
+#	tau_dust = 0
+#	for i in range (n):
+#		delta_z = (z_f-z_ini)/n
+#		zi = (z_ini + i*delta_z)
+#		zmid = 1/2*(zi + z_ini + (i+1)*delta_z)
+#		tau_dust += sigma_galaxy*numberdensity_galaxy*tau_g(zmid)*(1+zmid)**(2)*d_h/np.sqrt(Omega_r*(1+zmid)**4 + Omega_m*(1+zmid)**3 + Omega_k*(1+zmid)**2 + Omega_L) * delta_z
+#	return (tau_dust)
 #z_f = [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0]
 #ax = plt.gca()
 #for j in range (20):
@@ -524,7 +523,33 @@ def bias_parameter_2(z,M):
 	return(8/21*(bias_parameter_1(z,M)-1) + (nu_halo - 3)/sigma_halo_interp(z,M)[0]**2 + 2*p_halo/((critical_density_parameter**2)*(1 + (a_halo*nu_halo)**p_halo))*(2*p_halo + 2*a_halo*nu_halo -1))
 
 #defining integrals in Eq(5) of https://iopscience.iop.org/article/10.1086/318660/fulltext/
-n_halo_integral_step = 500
+n_halo_integral_step = 100
+
+#defining a class to store halo_distribution_function(z,M) and bias_parameter_1(z,M) and bias_parameter_2(z,M)
+class halo_info(object):
+	def __init__(self,in1,in2,in3,in4):
+		self.z = in1
+		self.M_halo_min = in2
+		self.M_halo_max = in3
+		self.n_halo_integral_step = in4
+
+		self.dn_dm_array = np.zeros((self.n_halo_integral_step))
+		self.bias1_array = np.zeros((self.n_halo_integral_step))
+		self.bias2_array = np.zeros((self.n_halo_integral_step))
+
+		for i in range(self.n_halo_integral_step):
+			epsilon = (self.M_halo_max/self.M_halo_min)**(1/self.n_halo_integral_step) - 1
+			delta_M_halo = self.M_halo_min* (self.M_halo_max/self.M_halo_min)**(i/self.n_halo_integral_step)*epsilon
+			M_halo_mid = self.M_halo_min * (self.M_halo_max/self.M_halo_min)**(i/self.n_halo_integral_step) * (1 + epsilon/2)
+			self.dn_dm_array[i] = halo_distribution_function(self.z,M_halo_mid)
+			self.bias1_array[i] = bias_parameter_1(self.z,M_halo_mid)
+			self.bias2_array[i] = bias_parameter_2(self.z,M_halo_mid)
+
+
+
+
+
+
 def I_03(z,myTriangle):
 	I03 = 0
 	for i in range(n_halo_integral_step):
@@ -534,8 +559,8 @@ def I_03(z,myTriangle):
 		#M_halo_mid = 1/2*(M_halo_i + (i+1)*delta_M_halo)
 		M_halo_mid = M_halo_min * (M_halo_max/M_halo_min)**(i/n_halo_integral_step) * (1 + epsilon/2)
 		I03 += (M_halo_mid/rho_background_matter)**3 * halo_distribution_function(z,M_halo_mid) * y_halo_parameter(myTriangle.k1,z,M_halo_mid) * y_halo_parameter(myTriangle.k2,z,M_halo_mid) * y_halo_parameter(myTriangle.k3,z,M_halo_mid) *delta_M_halo
-		print (I03)
 	return(I03)
+
 
 def I_12(z,myTriangle,i):
 	k1 = myTriangle.k1; k2 = myTriangle.k2
@@ -552,8 +577,9 @@ def I_12(z,myTriangle,i):
 		#M_halo_i = delta_M_halo*i
 		#M_halo_mid = 1/2*(M_halo_i + (i+1)*delta_M_halo)
 		I12 += (M_halo_mid/rho_background_matter)**2 * halo_distribution_function(z,M_halo_mid) * bias_parameter_1(z,M_halo_mid) * y_halo_parameter(k1,z,M_halo_mid) * y_halo_parameter(k2,z,M_halo_mid) * delta_M_halo
-		print (I12)
+		#print (I12)
 	return(I12)
+
 
 def I_11(z,myTriangle,i):
 	k1 = myTriangle.k1
@@ -570,8 +596,12 @@ def I_11(z,myTriangle,i):
 		#M_halo_i = delta_M_halo*i
 		#M_halo_mid = 1/2*(M_halo_i + (i+1)*delta_M_halo)
 		I11 += (M_halo_mid/rho_background_matter) * halo_distribution_function(z,M_halo_mid) * bias_parameter_1(z,M_halo_mid) * y_halo_parameter(myTriangle.k1,z,M_halo_mid) * delta_M_halo
-		print (I11)
+		#print (I11)
 	return(I11)
+
+test_tri = kTriangle(0.0001,0.0001,2/3*np.pi)
+print(I_11(0,test_tri,0))
+
 
 def I_21(z,myTriangle,i):
 	k1 = myTriangle.k1
@@ -588,8 +618,9 @@ def I_21(z,myTriangle,i):
 		#M_halo_i = delta_M_halo*i
 		#M_halo_mid = 1/2*(M_halo_i + (i+1)*delta_M_halo)
 		I21 += (M_halo_mid/rho_background_matter) * halo_distribution_function(z,M_halo_mid) * bias_parameter_2(z,M_halo_mid) * y_halo_parameter(myTriangle.k1,z,M_halo_mid) * delta_M_halo
-		print (I21)
+		#print (I21)
 	return(I21)
+
 
 #defining single, double, and triple halo contribution to halo model bispectrum as formulated in https://iopscience.iop.org/article/10.1086/318660/fulltext/
 
@@ -614,6 +645,7 @@ def triple_halo_bispectrum(z,myTriangle):
 def total_halo_bispectrum(z,myTriangle):
 	return(I_03(z,myTriangle) + double_halo_bispectrum(z,myTriangle) + triple_halo_bispectrum(z,myTriangle))
 
-tri = kTriangle(1,1,0.6*np.pi)
+#tri = kTriangle(0.3,0.3,2/3*np.pi)
 
-print(total_halo_bispectrum(1,tri))
+#print(total_halo_bispectrum(0,tri))
+#print(B_matterspec(0,tri))
