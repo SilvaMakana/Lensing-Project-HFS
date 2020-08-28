@@ -550,16 +550,16 @@ print(halo_info(0,M_halo_min,M_halo_max,n_halo_integral_step).bias1_array)
 
 
 
-def I_03(z,myTriangle):
+def I_03(z,myTriangle,halo_stuff):
 	I03 = 0
-	dn_dm[i] = halo_info(z,M_halo_min,M_halo_max,n_halo_integral_step).dn_dm_array
+	#dn_dm[i] = halo_info(z,M_halo_min,M_halo_max,n_halo_integral_step).dn_dm_array
 	for i in range(n_halo_integral_step):
 		epsilon = (M_halo_max/M_halo_min)**(1/n_halo_integral_step) - 1
 		delta_M_halo = M_halo_min* (M_halo_max/M_halo_min)**(i/n_halo_integral_step)*epsilon
 		#M_halo_i = delta_M_halo*i
 		#M_halo_mid = 1/2*(M_halo_i + (i+1)*delta_M_halo)
 		M_halo_mid = M_halo_min * (M_halo_max/M_halo_min)**(i/n_halo_integral_step) * (1 + epsilon/2)
-		I03 += (M_halo_mid/rho_background_matter)**3 * dn_dm[i] * y_halo_parameter(myTriangle.k1,z,M_halo_mid) * y_halo_parameter(myTriangle.k2,z,M_halo_mid) * y_halo_parameter(myTriangle.k3,z,M_halo_mid) *delta_M_halo
+		I03 += (M_halo_mid/rho_background_matter)**3 * halo_stuff.dn_dm[i] * y_halo_parameter(myTriangle.k1,z,M_halo_mid) * y_halo_parameter(myTriangle.k2,z,M_halo_mid) * y_halo_parameter(myTriangle.k3,z,M_halo_mid) *delta_M_halo
 	return(I03)
 
 
