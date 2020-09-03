@@ -481,15 +481,15 @@ def r_halo_virial(M):
 	return(1/(200)**(1/3)*r_halo_lagrangian(M))
 
 #defining characteristic radius
-def r_characteristic(z,M):
-	return(r_halo_virial(M)/c_concentration(z,M))
+def r_characteristic(z,M,M_crit):
+	return(r_halo_virial(M)/c_concentration(z,M,M_crit))
 
-def rho_characteristic(z,M):
-	return(M/(4*np.pi*r_characteristic(z,M)**3*(np.log(1+c_concentration(z,M))-c_concentration(z,M)/(1+c_concentration(z,M)))))
+def rho_characteristic(z,M,M_crit):
+	return(M/(4*np.pi*r_characteristic(z,M,M_crit)**3*(np.log(1+c_concentration(z,M,M_crit))-c_concentration(z,M,M_crit)/(1+c_concentration(z,M,M_crit)))))
 
 #density profile for general dark matter profiles
-def rho_halo(r,z,M):
-	return(rho_characteristic(z,M)/((r/r_characteristic(z,M))**(-alpha)*(1 + r/r_characteristic(z,M))**(3 + alpha)))
+def rho_halo(r,z,M,M_crit):
+	return(rho_characteristic(z,M,M_crit)/((r/r_characteristic(z,M,M_crit))**(-alpha)*(1 + r/r_characteristic(z,M,M_crit))**(3 + alpha)))
 
 
 #mass function
@@ -498,7 +498,7 @@ p_halo = 0.3
 def f_halo_mass(z,M):
 	nu_halo = (critical_density_parameter/sigma_halo_interp(z,M)[0])**2
 	nu_a = a_halo*nu_halo
-	return(1/5.81145*(1+nu_a**(-p_halo))*a_halo*e**(-nu_a/2)/nu_halo)
+	return(1/2.05435*(1+nu_a**(-p_halo))*nu_a**(1/2)*e**(-nu_a/2)/nu_halo)
 
 #defining the derivative of nu_halo w.r.t to M (mass)
 def dnu_dM(z,M):
@@ -517,14 +517,14 @@ def halo_distribution_function(z,M):
 
 #print(halo_distribution_function(1,10**9))
 #dimesionaless Fourier Transform of density profile
-def y_halo_parameter1(k,z,M):
-	y_halo = 0
-	for i in range(n):
-		delta_r_halo = r_halo_virial(M)/n
-		r_halo_i = delta_r_halo*i
-		r_halo_mid = 1/2*(r_halo_i + (i+1)*delta_r_halo)
-		y_halo += 1/M * 4*np.pi*r_halo_mid**2 * rho_halo(r_halo_mid,z,M) * np.sin(k*r_halo_mid)/(k*r_halo_mid) *delta_r_halo
-	return(y_halo)
+#def y_halo_parameter1(k,z,M):
+#	y_halo = 0
+#	for i in range(n):
+#		delta_r_halo = r_halo_virial(M)/n
+#		r_halo_i = delta_r_halo*i
+#		r_halo_mid = 1/2*(r_halo_i + (i+1)*delta_r_halo)
+#		y_halo += 1/M * 4*np.pi*r_halo_mid**2 * rho_halo(r_halo_mid,z,M) * np.sin(k*r_halo_mid)/(k*r_halo_mid) *delta_r_halo
+#	return(y_halo)
 
 def y_halo_parameter2(k,M,halo_stuff,g):
 	y_halo = 0
@@ -580,18 +580,16 @@ class halo_info(object):
 			self.bias2_array[i] = bias_parameter_2(self.z,M_halo_mid)
 			#self.r_halo_virial_array[i] = r_halo_virial(M_halo_mid)
 			self.c_concentration_array[i] = c_concentration(self.z,M_halo_mid,self.M_critical)
-			self.scale_M_critical_array[i] = scale_M_critical(self.z,M_halo_mid)
-			self.r_characteristic_array[i] = r_characteristic(self.z,M_halo_mid)
-			self.rho_characteristic_array[i] = rho_characteristic(self.z,M_halo_mid)
+			#self.scale_M_critical_array[i] = scale_M_critical(self.z,M_halo_mid)
+			self.r_characteristic_array[i] = r_characteristic(self.z,M_halo_mid,self.M_critical)
+			self.rho_characteristic_array[i] = rho_characteristic(self.z,M_halo_mid,self.M_critical)
 			for j in range(n):
 				delta_r_halo = r_halo_virial(M_halo_mid)/n
 				r_halo_j = delta_r_halo*j
 				r_halo_mid = 1/2*(r_halo_j + (j+1)*delta_r_halo)
-				self.rho_halo_array[i,j] = rho_halo(r_halo_mid,self.z,M_halo_mid)
+				self.rho_halo_array[i,j] = rho_halo(r_halo_mid,self.z,M_halo_mid,self.M_critical)
 
 
-print(halo_info(0,M_halo_min,M_halo_max,n_halo_integral_step).M_halo_critical_array)
-sys.exit()
 #print(y_halo_parameter1(0.0001,0,10**19))
 #print(y_halo_parameter2(0.0001,10**19,halo_info(0,M_halo_min,M_halo_max,n_halo_integral_step),99))
 
@@ -681,7 +679,7 @@ def double_halo_bispectrum(z,myTriangle,halo_stuff):
 
 #triple halo contribution
 def triple_halo_bispectrum(z,myTriangle,halo_stuff):
-	return((2*analy_F(myTriangle,0)*I_11(myTriangle,halo_stuff,2) + I_21(myTriangle,halo_stuff,2)) * I_11(myTriangle,halo_stuff,0)*I_11(myTriangle,halo_stuff,1)*PSetNL.P_interp(z,myTriangle.k1)*PSetNL.P_interp(z,myTriangle.k2) + (2*analy_F(myTriangle,2)*I_11(myTriangle,halo_stuff,1) + I_21(myTriangle,halo_stuff,1)) * I_11(myTriangle,halo_stuff,2)*I_11(myTriangle,halo_stuff,0)*PSetNL.P_interp(z,myTriangle.k3)*PSetNL.P_interp(z,myTriangle.k1) + (2*analy_F(z,myTriangle,1)*I_11(myTriangle,halo_stuff,0) + I_21(myTriangle,halo_stuff,0)) * I_11(myTriangle,halo_stuff,1)*I_11(myTriangle,halo_stuff,2)*PSetNL.P_interp(z,myTriangle.k2)*PSetNL.P_interp(z,myTriangle.k3))
+	return((2*analy_F(myTriangle,0)*I_11(myTriangle,halo_stuff,2) + I_21(myTriangle,halo_stuff,2)) * I_11(myTriangle,halo_stuff,0)*I_11(myTriangle,halo_stuff,1)*PSetNL.P_interp(z,myTriangle.k1)*PSetNL.P_interp(z,myTriangle.k2) + (2*analy_F(myTriangle,2)*I_11(myTriangle,halo_stuff,1) + I_21(myTriangle,halo_stuff,1)) * I_11(myTriangle,halo_stuff,2)*I_11(myTriangle,halo_stuff,0)*PSetNL.P_interp(z,myTriangle.k3)*PSetNL.P_interp(z,myTriangle.k1) + (2*analy_F(myTriangle,1)*I_11(myTriangle,halo_stuff,0) + I_21(myTriangle,halo_stuff,0)) * I_11(myTriangle,halo_stuff,1)*I_11(myTriangle,halo_stuff,2)*PSetNL.P_interp(z,myTriangle.k2)*PSetNL.P_interp(z,myTriangle.k3))
 
 #permutations for triple_halo_bispectrum
 # first - (2*perturb_F(z,myTriangle,0)*I_11(z,myTriangle,2) + I_21(z,myTriangle,2)) * I_11(z,myTriangle,0)*I_11(z,myTriangle,1)*PSetNL.P_interp(z,myTriangle.k1)*PSetNL.P_interp(z,myTriangle.k2)
