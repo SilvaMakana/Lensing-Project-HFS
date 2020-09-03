@@ -469,11 +469,12 @@ def scale_M_critical(z,M):
 	return((critical_density_parameter/sigma_halo_interp(z,M)[0])**2 - 1)
 
 def M_halo_critical(z):
-	return optimize.root_scalar(lambda M: scale_M_critical(z,M),bracket=[10**8,10**16],method ='brentq')
+	something = optimize.root_scalar(lambda M: scale_M_critical(z,M),bracket=[10**8,10**16],method ='brentq')
+	return something.root
 
 #defining concentration as a function of M and redshift
-def c_concentration(z,M):
-	return(10*(M/M_halo_critical(z).root)**(-0.2))
+def c_concentration(z,M,M_crit):
+	return(10*(M/M_crit)**(-0.2))
 
 #virial radius in terms of lagrangian radius
 def r_halo_virial(M):
@@ -563,11 +564,12 @@ class halo_info(object):
 		self.bias2_array = np.zeros((self.n_halo_integral_step))
 		#self.r_halo_virial_array = np.zeros((self.n_halo_integral_step))
 		self.c_concentration_array = np.zeros((self.n_halo_integral_step))
-		self.scale_M_critical_array = np.zeros((self.n_halo_integral_step))
-		#self.M_halo_critical_array = np.zeros((self.n_halo_integral_step))
+		self.M_halo_critical_array = np.zeros((self.n_halo_integral_step))
 		self.r_characteristic_array = np.zeros((self.n_halo_integral_step))
 		self.rho_characteristic_array = np.zeros((self.n_halo_integral_step))
 		self.rho_halo_array = np.zeros((self.n_halo_integral_step,n))
+
+		self.M_critical = M_halo_critical(self.z)
 
 		for i in range(self.n_halo_integral_step):
 			epsilon = (self.M_halo_max/self.M_halo_min)**(1/self.n_halo_integral_step) - 1
@@ -577,9 +579,8 @@ class halo_info(object):
 			self.bias1_array[i] = bias_parameter_1(self.z,M_halo_mid)
 			self.bias2_array[i] = bias_parameter_2(self.z,M_halo_mid)
 			#self.r_halo_virial_array[i] = r_halo_virial(M_halo_mid)
-			self.c_concentration_array[i] = c_concentration(self.z,M_halo_mid)
+			self.c_concentration_array[i] = c_concentration(self.z,M_halo_mid,self.M_critical)
 			self.scale_M_critical_array[i] = scale_M_critical(self.z,M_halo_mid)
-			#self.M_halo_critical_array[i] = M_halo_critical(self.z)
 			self.r_characteristic_array[i] = r_characteristic(self.z,M_halo_mid)
 			self.rho_characteristic_array[i] = rho_characteristic(self.z,M_halo_mid)
 			for j in range(n):
@@ -589,7 +590,8 @@ class halo_info(object):
 				self.rho_halo_array[i,j] = rho_halo(r_halo_mid,self.z,M_halo_mid)
 
 
-#print(halo_info(0,M_halo_min,M_halo_max,n_halo_integral_step).bias1_array)
+print(halo_info(0,M_halo_min,M_halo_max,n_halo_integral_step).M_halo_critical_array)
+sys.exit()
 #print(y_halo_parameter1(0.0001,0,10**19))
 #print(y_halo_parameter2(0.0001,10**19,halo_info(0,M_halo_min,M_halo_max,n_halo_integral_step),99))
 
