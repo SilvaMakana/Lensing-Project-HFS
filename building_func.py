@@ -317,6 +317,15 @@ def perturb_F(z,myTriangle,i):
 	if i==2:
 		k1 = myTriangle.k3; k2 = myTriangle.k1; cos12 = myTriangle.cos13
 	return (5/7*perturb_a(z,k1)*perturb_a(z,k2)+1/2*cos12*(k1/k2+k2/k1)*perturb_b(z,k1)*perturb_b(z,k2)+2/7*cos12**2*perturb_c(z,k1)*perturb_c(z,k2))
+
+def analy_F(myTriangle,i):
+	k1 = myTriangle.k1; k2 = myTriangle.k2; cos12 = myTriangle.cos12
+	if i==1:
+		k1 = myTriangle.k2; k2 = myTriangle.k3; cos12 = myTriangle.cos23
+	if i==2:
+		k1 = myTriangle.k3; k2 = myTriangle.k1; cos12 = myTriangle.cos13
+	return(5/7+1/2*cos12*(k1/k2+k2/k1)+2/7*cos12**2)
+
 #print(perturb_F(1.0,kTriangle(0.08,0.08,0.2*np.pi),0),perturb_F(1.0,kTriangle(0.08,0.08,0.2*np.pi),1),perturb_F(1.0,kTriangle(0.08,0.08,0.2*np.pi),2))
 #sys.exit()
 #x = perturb_F(z,tri,0)
@@ -488,7 +497,7 @@ p_halo = 0.3
 def f_halo_mass(z,M):
 	nu_halo = (critical_density_parameter/sigma_halo_interp(z,M)[0])**2
 	nu_a = a_halo*nu_halo
-	return(1/7.25396*(1+nu_a**(-p_halo))*nu_a**(1/2)*e**(-nu_a/2)/nu_halo)
+	return(1/5.81145*(1+nu_a**(-p_halo))*a_halo*e**(-nu_a/2)/nu_halo)
 
 #defining the derivative of nu_halo w.r.t to M (mass)
 def dnu_dM(z,M):
@@ -636,8 +645,9 @@ def I_11(myTriangle,halo_stuff,i):
 		#print (I11)
 	return(I11)
 
-#test_tri = kTriangle(0.0001,0.0001,2/3*np.pi)
-#print(I_11(0,test_tri,0))
+halo_data = halo_info(0,M_halo_min,M_halo_max,n_halo_integral_step)
+test_tri = kTriangle(0.0001,0.0001,2/3*np.pi)
+print(I_11(test_tri,halo_data,0))
 
 
 def I_21(myTriangle,halo_stuff,i):
@@ -669,7 +679,7 @@ def double_halo_bispectrum(z,myTriangle,halo_stuff):
 
 #triple halo contribution
 def triple_halo_bispectrum(z,myTriangle,halo_stuff):
-	return((2*perturb_F(z,myTriangle,0)*I_11(myTriangle,halo_stuff,2) + I_21(myTriangle,halo_stuff,2)) * I_11(myTriangle,halo_stuff,0)*I_11(myTriangle,halo_stuff,1)*PSetNL.P_interp(z,myTriangle.k1)*PSetNL.P_interp(z,myTriangle.k2) + (2*perturb_F(z,myTriangle,2)*I_11(myTriangle,halo_stuff,1) + I_21(myTriangle,halo_stuff,1)) * I_11(myTriangle,halo_stuff,2)*I_11(myTriangle,halo_stuff,0)*PSetNL.P_interp(z,myTriangle.k3)*PSetNL.P_interp(z,myTriangle.k1) + (2*perturb_F(z,myTriangle,1)*I_11(myTriangle,halo_stuff,0) + I_21(myTriangle,halo_stuff,0)) * I_11(myTriangle,halo_stuff,1)*I_11(myTriangle,halo_stuff,2)*PSetNL.P_interp(z,myTriangle.k2)*PSetNL.P_interp(z,myTriangle.k3))
+	return((2*analy_F(myTriangle,0)*I_11(myTriangle,halo_stuff,2) + I_21(myTriangle,halo_stuff,2)) * I_11(myTriangle,halo_stuff,0)*I_11(myTriangle,halo_stuff,1)*PSetNL.P_interp(z,myTriangle.k1)*PSetNL.P_interp(z,myTriangle.k2) + (2*analy_F(myTriangle,2)*I_11(myTriangle,halo_stuff,1) + I_21(myTriangle,halo_stuff,1)) * I_11(myTriangle,halo_stuff,2)*I_11(myTriangle,halo_stuff,0)*PSetNL.P_interp(z,myTriangle.k3)*PSetNL.P_interp(z,myTriangle.k1) + (2*analy_F(z,myTriangle,1)*I_11(myTriangle,halo_stuff,0) + I_21(myTriangle,halo_stuff,0)) * I_11(myTriangle,halo_stuff,1)*I_11(myTriangle,halo_stuff,2)*PSetNL.P_interp(z,myTriangle.k2)*PSetNL.P_interp(z,myTriangle.k3))
 
 #permutations for triple_halo_bispectrum
 # first - (2*perturb_F(z,myTriangle,0)*I_11(z,myTriangle,2) + I_21(z,myTriangle,2)) * I_11(z,myTriangle,0)*I_11(z,myTriangle,1)*PSetNL.P_interp(z,myTriangle.k1)*PSetNL.P_interp(z,myTriangle.k2)
@@ -686,3 +696,4 @@ tri = kTriangle(0.3,0.3,2/3*np.pi)
 halo_data = halo_info(0,M_halo_min,M_halo_max,n_halo_integral_step)
 print(B_matterspec(0,tri))
 print(total_halo_bispectrum(0,tri,halo_data))
+
