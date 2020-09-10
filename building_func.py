@@ -439,7 +439,7 @@ def Q123(z,myTriangle):
 ##Building Halo Model Matter Bispectrum
 
 #Input paramters
-n_M = 31
+n_M = 62
 critical_density_parameter = 1.68 #value of a spherical overdensity at which it collapses for Einstein de-Sitter Model
 rho_background_matter = Omega_m * rho_critial #background density of matter
 alpha = -1 # NFW Halo Profile
@@ -450,16 +450,16 @@ def r_halo_lagrangian(M):
 
 #building rms fluctuation within a top-hat filter at the virial radius corresponding to mass M
 #empty array that has rows of mass entries from M_halo_array and columns of z entries from PSetLin.z_array
-sigma_halo_array = np.zeros((n_M,n_z))
+sigma_halo_array = np.zeros((n_z,n_M))
 
 #halo mass array from 10**4 M_S to 10**16 M_S
-M_halo_min = 10**4
+M_halo_min = 10**1
 M_halo_max = 10**16
-M_halo_array = np.logspace(4,16,n_M)
+M_halo_array = np.logspace(1,16,n_M)
 
 #for loop to fill in the rows of sigma_halo_array
 for i in range(n_M):
-	sigma_halo_array[i,:] = sigma(PSetLin.z_array,kstart,kend,r_halo_lagrangian(M_halo_array[i]),n)
+	sigma_halo_array[:,i] = sigma(PSetLin.z_array,kstart,kend,r_halo_lagrangian(M_halo_array[i]),n)
 
 #Interpolated function for sigma of z and M
 sigma_halo_interp = interp2d(PSetLin.z_array,M_halo_array,sigma_halo_array,kind = "cubic")
@@ -469,7 +469,7 @@ def scale_M_critical(z,M):
 	return((critical_density_parameter/sigma_halo_interp(z,M)[0])**2 - 1)
 
 def M_halo_critical(z):
-	something = optimize.root_scalar(lambda M: scale_M_critical(z,M),bracket=[10**4,10**16],method ='brentq')
+	something = optimize.root_scalar(lambda M: scale_M_critical(z,M),bracket=[10**1,10**16],method ='brentq')
 	return something.root
 
 #defining concentration as a function of M and redshift
@@ -511,10 +511,11 @@ def halo_distribution_function(z,M):
 	return(rho_background_matter/M*f_halo_mass(z,M)*dnu_dM(z,M))
 
 
-#plt.plot(M_halo_array,dnu_dM(0,M_halo_array)[0], "r")
-#plt.plot(M_halo_array,(critical_density_parameter/sigma_halo_interp(0,M_halo_array))**2, "g")
-#plt.yscale("log")
-#plt.show()
+plt.plot(M_halo_array,dnu_dM(0,M_halo_array)[0], "r")
+plt.plot(M_halo_array,(critical_density_parameter/sigma_halo_interp(0,M_halo_array))**2, "g")
+plt.yscale("log")
+plt.xscale("log")
+plt.show()
 
 #print(halo_distribution_function(1,10**9))
 #dimesionaless Fourier Transform of density profile
@@ -549,7 +550,7 @@ def bias_parameter_2(z,M):
 	return(8/21*(bias_parameter_1(z,M)-1) + (nu_halo - 3)/sigma_halo_interp(z,M)[0]**2 + 2*p_halo/((critical_density_parameter**2)*(1 + (a_halo*nu_halo)**p_halo))*(2*p_halo + 2*a_halo*nu_halo -1))
 
 #defining integrals in Eq(5) of https://iopscience.iop.org/article/10.1086/318660/fulltext/
-n_halo_integral_step = 500
+n_halo_integral_step = 100
 
 #defining a class to store halo_distribution_function(z,M) and bias_parameter_1(z,M) and bias_parameter_2(z,M)
 class halo_info(object):
@@ -646,9 +647,10 @@ def I_11(myTriangle,halo_stuff,i):
 		#print (I11)
 	return(I11)
 
-#halo_data = halo_info(0,M_halo_min,M_halo_max,n_halo_integral_step)
-#test_tri = kTriangle(0.0001,0.0001,2/3*np.pi)
-#print(I_11(test_tri,halo_data,0))
+halo_data = halo_info(0,M_halo_min,M_halo_max,n_halo_integral_step)
+test_tri = kTriangle(0.0001,0.0001,2/3*np.pi)
+print(I_11(test_tri,halo_data,0))
+sys.exit()
 
 
 def I_21(myTriangle,halo_stuff,i):
@@ -694,15 +696,15 @@ def total_halo_bispectrum(z,myTriangle,halo_stuff):
 	return(I_03(myTriangle,halo_stuff) + double_halo_bispectrum(z,myTriangle,halo_stuff) + triple_halo_bispectrum(z,myTriangle,halo_stuff))
 
 #tri = kTriangle(0.3,0.3,2/3*np.pi)
-halo_data = halo_info(0,M_halo_min,M_halo_max,n_halo_integral_step)
+#halo_data = halo_info(0,M_halo_min,M_halo_max,n_halo_integral_step)
 #print(B_matterspec(0,tri))
 #print(total_halo_bispectrum(0,tri,halo_data))
 
-log_halo_k_array = np.logspace(-2,1,100)
-for j in range (100):
+#log_halo_k_array = np.logspace(-2,1,100)
+#for j in range (100):
 	#reduced_shear_value = reduced_shear(0,10000,1,1,log_l_array[j],0)[0,0]
 	#tri = kTriangle(log_halo_k_array[i],log_halo_k_array[i],2/3*np.pi)
-	total_halo_bispectrum_value = total_halo_bispectrum(0,kTriangle(log_halo_k_array[j],log_halo_k_array[j],2/3*np.pi),halo_data)[0,0]
-	plt.scatter(log_halo_k_array[j],total_halo_bispectrum_value)
-	print(log_halo_k_array[j],(log_halo_k_array[j])**3/(2*np.pi**2)*(total_halo_bispectrum_value)**(1/2))
+	#total_halo_bispectrum_value = total_halo_bispectrum(0,kTriangle(log_halo_k_array[j],log_halo_k_array[j],2/3*np.pi),halo_data)[0,0]
+	#plt.scatter(log_halo_k_array[j],total_halo_bispectrum_value)
+	#print(log_halo_k_array[j],(log_halo_k_array[j])**3/(2*np.pi**2)*(total_halo_bispectrum_value)**(1/2))
 
