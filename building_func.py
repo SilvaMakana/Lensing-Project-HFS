@@ -511,6 +511,7 @@ def dnu_dM(z,M):
 def halo_distribution_function(z,M):
 	return(rho_background_matter/M*f_halo_mass(z,M)*dnu_dM(z,M))
 
+
 #print(dnu_dM(0,10**6),(critical_density_parameter/sigma_halo_interp(0,10**6)[0])**2,((critical_density_parameter/sigma_halo_interp(0,10**6 + 10**4)[0])**2 - (critical_density_parameter/sigma_halo_interp(0,10**6)[0])**2)/10**4)
 
 
@@ -603,6 +604,18 @@ class halo_info(object):
 
 #print(y_halo_parameter1(0.0001,0,10**19))
 #print(y_halo_parameter2(0.0001,10**19,halo_info(0,M_halo_min,M_halo_max,n_halo_integral_step),99))
+
+
+def integral_halo_dist_M_func(z):
+	halo_dist_M = 0
+	for i in range(n_halo_integral_step):
+		epsilon = (M_halo_max/M_halo_min)**(1/n_halo_integral_step) - 1
+		delta_M_halo = M_halo_min* (M_halo_max/M_halo_min)**(i/n_halo_integral_step)*epsilon
+		M_halo_mid = M_halo_min * (M_halo_max/M_halo_min)**(i/n_halo_integral_step) * (1 + epsilon/2)
+		halo_dist_M += M_halo_mid * halo_distribution_function(z,M_halo_mid) * delta_M_halo
+	return(halo_dist_M)
+
+
 
 
 
