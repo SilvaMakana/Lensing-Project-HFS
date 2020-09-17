@@ -464,6 +464,7 @@ for i in range(n_M):
 #Interpolated function for sigma of z and M
 sigma_halo_interp = RectBivariateSpline(PSetLin.z_array,M_halo_array,sigma_halo_array,kx=3,ky=3)
 
+
 #defining mass scale for when nu_halo(M_scale) = 1
 def scale_M_critical(z,M):
 	return((critical_density_parameter/sigma_halo_interp(z,M)[0])**2 - 1)
@@ -642,6 +643,7 @@ def transform_I_11(myTriangle,halo_stuff,i):
 		k1 = myTriangle.k2
 	if i==2:
 		k1 = myTriangle.k3
+	bias_1 = 1  + (2*p_halo - 1)/critical_density_parameter
 	transformI11 = 0
 	for i in range(n_halo_integral_step):
 		epsilon = (M_halo_max/M_halo_min)**(1/n_halo_integral_step) - 1
@@ -650,9 +652,9 @@ def transform_I_11(myTriangle,halo_stuff,i):
 		#delta_M_halo = (10**16 - 10**8)/n_halo_integral_step
 		#M_halo_i = delta_M_halo*i
 		#M_halo_mid = 1/2*(M_halo_i + (i+1)*delta_M_halo)
-		transformI11 += (M_halo_mid/rho_background_matter) * halo_stuff.dn_dm_array[i] * (halo_stuff.transform_bias1_array - halo_stuff.bias1_array[i] * y_halo_parameter2(k1,M_halo_mid,halo_stuff,i)) * delta_M_halo
+		transformI11 += (M_halo_mid/rho_background_matter) * halo_stuff.dn_dm_array[i] * (bias_1 - halo_stuff.bias1_array[i] * y_halo_parameter2(k1,M_halo_mid,halo_stuff,i)) * delta_M_halo
 		#print (I11)
-	return(halo_stuff.transform_bias1_array - transformI11)
+	return(bias_1 - transformI11)
 
 
 
@@ -700,6 +702,7 @@ def transform_I_21(myTriangle,halo_stuff,i):
 		k1 = myTriangle.k2
 	if i==2:
 		k1 = myTriangle.k3
+	bias_2 = -8/21 * (1-2*p_halo)/critical_density_parameter + 2*p_halo*(2*p_halo - 1)/critical_density_parameter**2
 	transformI21 = 0
 	for i in range(n_halo_integral_step):
 		epsilon = (M_halo_max/M_halo_min)**(1/n_halo_integral_step) - 1
@@ -708,9 +711,9 @@ def transform_I_21(myTriangle,halo_stuff,i):
 		#delta_M_halo = (10**16 - 10**8)/n_halo_integral_step
 		#M_halo_i = delta_M_halo*i
 		#M_halo_mid = 1/2*(M_halo_i + (i+1)*delta_M_halo)
-		transformI21 += (M_halo_mid/rho_background_matter) * halo_stuff.dn_dm_array[i] * (halo_stuff.transform_bias2_array - halo_stuff.bias2_array[i] * y_halo_parameter2(k1,M_halo_mid,halo_stuff,i)) * delta_M_halo
+		transformI21 += (M_halo_mid/rho_background_matter) * halo_stuff.dn_dm_array[i] * (bias_2 - halo_stuff.bias2_array[i] * y_halo_parameter2(k1,M_halo_mid,halo_stuff,i)) * delta_M_halo
 		#print (I21)
-	return(halo_stuff.transform_bias2_array - transformI21)
+	return(bias_2 - transformI21)
 
 
 def I_21(myTriangle,halo_stuff,i):
