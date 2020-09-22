@@ -534,12 +534,22 @@ def halo_distribution_function(z,M):
 
 def y_halo_parameter2(k,M,halo_stuff,g):
 	y_halo = 0
+	delta_r_halo = r_halo_virial(M)/n
 	for i in range(n):
-		delta_r_halo = r_halo_virial(M)/n
 		r_halo_i = delta_r_halo*i
 		r_halo_mid = 1/2*(r_halo_i + (i+1)*delta_r_halo)
-		y_halo += 1/M * 4*np.pi*r_halo_mid**2 * halo_stuff.rho_halo_array[g,i] * np.sin(k*r_halo_mid)/(k*r_halo_mid) *delta_r_halo
-	return(y_halo)
+		y_halo += r_halo_mid**2 * halo_stuff.rho_halo_array[g,i] * np.sin(k*r_halo_mid)/(k*r_halo_mid) *delta_r_halo
+	return(1/M * 4 * np.pi * y_halo)
+
+def new_y_halo_parameter2(k,M,halo_stuff,g):
+	y_halo = 0
+	delta_r_halo = r_halo_virial(M)/n
+	r_halo_mid = np.linspace(0.5*delta_r_halo,(n-1/2)*delta_r_halo,n)
+	y_halo = np.sum(r_halo_mid**2 * halo_stuff.rho_halo_array[g,:] * np.sin(k*r_halo_mid)/(k*r_halo_mid)) * delta_r_halo
+	return(1/M * 4 * np.pi * y_halo)
+
+
+
 
 
 #halo bias parameters
@@ -557,7 +567,7 @@ def bias_parameter_1(z,M):
 def bias_parameter_2(z,M):
 	nu_halo = (critical_density_parameter/sigma_halo_interp(z,M)[0])**2
 	b1_L = -2*nu_halo/critical_density_parameter*((1 - a_halo*nu_halo)/(2*nu_halo) - p_halo/(nu_halo*(1+(a_halo*nu_halo)**p_halo)))
-	b2_L = 4*nu_halo**2/critical_density_parameter**2((p_halo**2 + nu_halo*a_halo*p_halo)/(nu_halo**2*(1+(a_halo*nu_halo)**p_halo)) + ((a_halo*nu_halo)**2 - 2*a_halo*nu_halo - 1)/(4*nu_halo**2))
+	b2_L = 4*nu_halo**2/critical_density_parameter**2*((p_halo**2 + nu_halo*a_halo*p_halo)/(nu_halo**2*(1+(a_halo*nu_halo)**p_halo)) + ((a_halo*nu_halo)**2 - 2*a_halo*nu_halo - 1)/(4*nu_halo**2))
 	return(8/21* b1_L + b2_L)
 
 #defining integrals in Eq(5) of https://iopscience.iop.org/article/10.1086/318660/fulltext/
@@ -611,6 +621,8 @@ class halo_info(object):
 
 #print(y_halo_parameter1(0.0001,0,10**19))
 #print(y_halo_parameter2(0.0001,10**19,halo_info(0,M_halo_min,M_halo_max,n_halo_integral_step),99))
+print(new_y_halo_parameter2(0.001,1,halo_info(0,M_halo_min,M_halo_max,n_halo_integral_step),0),y_halo_parameter2(0.001,1,halo_info(0,M_halo_min,M_halo_max,n_halo_integral_step),0))
+sys.exit()
 
 
 def integral_halo_dist_M_func(z):
