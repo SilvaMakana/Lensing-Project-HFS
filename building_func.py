@@ -453,9 +453,9 @@ def r_halo_lagrangian(M):
 sigma_halo_array = np.zeros((n_z,n_M))
 
 #halo mass array from 10**-4 M_S to 10**16 M_S
-M_halo_min = 10**-4
+M_halo_min = 10**0
 M_halo_max = 10**16
-M_halo_array = np.logspace(-4,16,n_M)
+M_halo_array = np.logspace(0,16,n_M)
 
 #for loop to fill in the rows of sigma_halo_array
 for i in range(n_M):
@@ -470,7 +470,7 @@ def scale_M_critical(z,M):
 	return((critical_density_parameter/sigma_halo_interp(z,M)[0])**2 - 1)
 
 def M_halo_critical(z):
-	something = optimize.root_scalar(lambda M: scale_M_critical(z,M),bracket=[10**-4,10**16],method ='brentq')
+	something = optimize.root_scalar(lambda M: scale_M_critical(z,M),bracket=[10**0,10**16],method ='brentq')
 	return something.root
 
 #defining concentration as a function of M and redshift
@@ -549,9 +549,16 @@ def bias_parameter_1(z,M):
 	return(1 + (a_halo*nu_halo-1)/critical_density_parameter + 2*p_halo/(critical_density_parameter*(1 + (a_halo*nu_halo)**p_halo)))
 
 #bias parameter 2
+#def bias_parameter_2(z,M):
+#	nu_halo = (critical_density_parameter/sigma_halo_interp(z,M)[0])**2
+#	return(8/21*(bias_parameter_1(z,M)-1) + (nu_halo - 3)/sigma_halo_interp(z,M)[0]**2 + 2*p_halo/((critical_density_parameter**2)*(1 + (a_halo*nu_halo)**p_halo))*(2*p_halo + 2*a_halo*nu_halo -1))
+
+#bias parameter 2 from arxiv 1201.4827
 def bias_parameter_2(z,M):
 	nu_halo = (critical_density_parameter/sigma_halo_interp(z,M)[0])**2
-	return(8/21*(bias_parameter_1(z,M)-1) + (nu_halo - 3)/sigma_halo_interp(z,M)[0]**2 + 2*p_halo/((critical_density_parameter**2)*(1 + (a_halo*nu_halo)**p_halo))*(2*p_halo + 2*a_halo*nu_halo -1))
+	b1_L = -2*nu_halo/critical_density_parameter*((1 - a_halo*nu_halo)/(2*nu_halo) - p_halo/(nu_halo*(1+(a_halo*nu_halo)**p_halo)))
+	b2_L = 4*nu_halo**2/critical_density_parameter**2((p_halo**2 + nu_halo*a_halo*p_halo)/(nu_halo**2*(1+(a_halo*nu_halo)**p_halo)) + ((a_halo*nu_halo)**2 - 2*a_halo*nu_halo - 1)/(4*nu_halo**2))
+	return(8/21* b1_L + b2_L)
 
 #defining integrals in Eq(5) of https://iopscience.iop.org/article/10.1086/318660/fulltext/
 n_halo_integral_step = 2000
@@ -614,8 +621,6 @@ def integral_halo_dist_M_func(z):
 		M_halo_mid = M_halo_min * (M_halo_max/M_halo_min)**(i/n_halo_integral_step) * (1 + epsilon/2)
 		halo_dist_M += M_halo_mid * halo_distribution_function(z,M_halo_mid) * delta_M_halo
 	return(halo_dist_M)
-
-
 
 
 
