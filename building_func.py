@@ -439,7 +439,7 @@ def Q123(z,myTriangle):
 ##Building Halo Model Matter Bispectrum
 
 #Input paramters
-n_M = 62
+n_M = 124
 critical_density_parameter = 1.68 #value of a spherical overdensity at which it collapses for Einstein de-Sitter Model
 rho_background_matter = Omega_m * rho_critial #background density of matter
 alpha = -1 # NFW Halo Profile
@@ -453,7 +453,7 @@ def r_halo_lagrangian(M):
 sigma_halo_array = np.zeros((n_z,n_M))
 
 #halo mass array from 10**-4 M_S to 10**16 M_S
-M_halo_min = 10**0
+M_halo_min = 10**(0)
 M_halo_max = 10**16
 M_halo_array = np.logspace(0,16,n_M)
 
@@ -763,7 +763,7 @@ def I_21(myTriangle,halo_stuff,i):
 #	return(I21)
 
 #halo_data = halo_info(0,M_halo_min,M_halo_max,n_halo_integral_step)
-#test_tri = kTriangle(0.001,0.001,2/3*np.pi)
+#test_tri = kTriangle(0.0001,0.0001,2/3*np.pi)
 #print(I_03(test_tri,halo_data),I_12(test_tri,halo_data,0),I_11(test_tri,halo_data,0),transform_I_11(test_tri,halo_data,0),I_01(test_tri,halo_data,0),I_21(test_tri,halo_data,0),transform_I_21(test_tri,halo_data,0))
 #sys.exit()
 
@@ -799,7 +799,10 @@ log_halo_k_array = np.logspace(-2,2,200)
 for j in range (200):
 	#reduced_shear_value = reduced_shear(0,10000,1,1,log_l_array[j],0)[0,0]
 	#tri = kTriangle(log_halo_k_array[i],log_halo_k_array[i],2/3*np.pi)
+	B1 = I_03(kTriangle(log_halo_k_array[j],log_halo_k_array[j],2/3*np.pi),halo_data)
+	B2 = double_halo_bispectrum(0,kTriangle(log_halo_k_array[j],log_halo_k_array[j],2/3*np.pi),halo_data)[0,0]
+	B3 = triple_halo_bispectrum(0,kTriangle(log_halo_k_array[j],log_halo_k_array[j],2/3*np.pi),halo_data)[0,0]
 	total_halo_bispectrum_value = total_halo_bispectrum(0,kTriangle(log_halo_k_array[j],log_halo_k_array[j],2/3*np.pi),halo_data)[0,0]
-	plt.scatter(log_halo_k_array[j],total_halo_bispectrum_value)
-	print(log_halo_k_array[j],(log_halo_k_array[j])**3/(2*np.pi**2)*(total_halo_bispectrum_value)**(1/2))
+	#plt.scatter(log_halo_k_array[j],total_halo_bispectrum_value)
+	print(log_halo_k_array[j],(log_halo_k_array[j])**3/(2*np.pi**2)*(B1)**(1/2),(log_halo_k_array[j])**3/(2*np.pi**2)*(B2)**(1/2),(log_halo_k_array[j])**3/(2*np.pi**2)*(B3)**(1/2),(log_halo_k_array[j])**3/(2*np.pi**2)*(total_halo_bispectrum_value)**(1/2))
 
