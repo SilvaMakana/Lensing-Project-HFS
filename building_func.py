@@ -453,9 +453,9 @@ def r_halo_lagrangian(M):
 sigma_halo_array = np.zeros((n_z,n_M))
 
 #halo mass array from 10**-4 M_S to 10**16 M_S
-M_halo_min = 10**(0)
+M_halo_min = 10**(-4)
 M_halo_max = 10**16
-M_halo_array = np.logspace(0,16,n_M)
+M_halo_array = np.logspace(-4,16,n_M)
 
 #for loop to fill in the rows of sigma_halo_array
 for i in range(n_M):
@@ -470,7 +470,7 @@ def scale_M_critical(z,M):
 	return((critical_density_parameter/sigma_halo_interp(z,M)[0])**2 - 1)
 
 def M_halo_critical(z):
-	something = optimize.root_scalar(lambda M: scale_M_critical(z,M),bracket=[10**0,10**16],method ='brentq')
+	something = optimize.root_scalar(lambda M: scale_M_critical(z,M),bracket=[10**(-4),10**16],method ='brentq')
 	return something.root
 
 #defining concentration as a function of M and redshift
@@ -549,6 +549,11 @@ def y_halo_parameter2(k,M,halo_stuff,g):
 	return(1/M * 4 * np.pi * y_halo)
 
 
+
+
+
+
+
 #halo bias parameters
 #bias parameter 1
 def bias_parameter_1(z,M):
@@ -566,6 +571,7 @@ def bias_parameter_2(z,M):
 	b1_L = -2*nu_halo/critical_density_parameter*((1 - a_halo*nu_halo)/(2*nu_halo) - p_halo/(nu_halo*(1+(a_halo*nu_halo)**p_halo)))
 	b2_L = 4*nu_halo**2/critical_density_parameter**2*((p_halo**2 + nu_halo*a_halo*p_halo)/(nu_halo**2*(1+(a_halo*nu_halo)**p_halo)) + ((a_halo*nu_halo)**2 - 2*a_halo*nu_halo - 1)/(4*nu_halo**2)) + 2*nu_halo/critical_density_parameter**2*((1 - a_halo*nu_halo)/(2*nu_halo) - p_halo/(nu_halo*(1+(a_halo*nu_halo)**p_halo)))
 	return(8/21* b1_L + b2_L)
+
 
 #defining integrals in Eq(5) of https://iopscience.iop.org/article/10.1086/318660/fulltext/
 n_halo_integral_step = 10000
@@ -623,6 +629,7 @@ class halo_info(object):
 #sys.exit()
 
 
+
 def integral_halo_dist_M_func(z):
 	halo_dist_M = 0
 	for i in range(n_halo_integral_step):
@@ -646,6 +653,17 @@ def I_03(myTriangle,halo_stuff):
 		I03 += (M_halo_mid/rho_background_matter)**3 * halo_stuff.dn_dm_array[i] * y_halo_parameter2(myTriangle.k1,M_halo_mid,halo_stuff,i) * y_halo_parameter2(myTriangle.k2,M_halo_mid,halo_stuff,i) * y_halo_parameter2(myTriangle.k3,M_halo_mid,halo_stuff,i) *delta_M_halo
 	return(I03)
 
+def integrand_I_03(myTriangle,halo_stuff):
+	integrand_I03_array_w_M = np.zeros(n_halo_integral_step)
+	for i in range(n_halo_integral_step):
+		epsilon = (M_halo_max/M_halo_min)**(1/n_halo_integral_step) - 1
+		delta_M_halo = M_halo_min* (M_halo_max/M_halo_min)**(i/n_halo_integral_step)*epsilon
+		#M_halo_i = delta_M_halo*i
+		#M_halo_mid = 1/2*(M_halo_i + (i+1)*delta_M_halo)
+		M_halo_mid = M_halo_min * (M_halo_max/M_halo_min)**(i/n_halo_integral_step) * (1 + epsilon/2)
+		integrand_I03_array_w_M[i] = (M_halo_mid/rho_background_matter)**3 * halo_stuff.dn_dm_array[i] * y_halo_parameter2(myTriangle.k1,M_halo_mid,halo_stuff,i) * y_halo_parameter2(myTriangle.k2,M_halo_mid,halo_stuff,i) * y_halo_parameter2(myTriangle.k3,M_halo_mid,halo_stuff,i) * M_halo_mid
+	return(integrand_I03_array_w_M)
+
 
 def I_12(myTriangle,halo_stuff,i):
 	k1 = myTriangle.k1; k2 = myTriangle.k2
@@ -665,6 +683,22 @@ def I_12(myTriangle,halo_stuff,i):
 		#print (I12)
 	return(I12)
 
+def integrand_I_12(myTriangle,halo_stuff,i):
+	k1 = myTriangle.k1; k2 = myTriangle.k2
+	if i==1:
+		k1 = myTriangle.k2; k2 = myTriangle.k3
+	if i==2:
+		k1 = myTriangle.k3; k2 = myTriangle.k1
+	integrand_I12_array_w_M = np.zeros(n_halo_integral_step)
+	for i in range(n_halo_integral_step):
+		epsilon = (M_halo_max/M_halo_min)**(1/n_halo_integral_step) - 1
+		delta_M_halo = M_halo_min* (M_halo_max/M_halo_min)**(i/n_halo_integral_step)*epsilon
+		#M_halo_i = delta_M_halo*i
+		#M_halo_mid = 1/2*(M_halo_i + (i+1)*delta_M_halo)
+		M_halo_mid = M_halo_min * (M_halo_max/M_halo_min)**(i/n_halo_integral_step) * (1 + epsilon/2)
+		integrand_I12_array_w_M[i] = (M_halo_mid/rho_background_matter)**2 * halo_stuff.dn_dm_array[i] * halo_stuff.bias1_array[i] * y_halo_parameter2(k1,M_halo_mid,halo_stuff,i) * y_halo_parameter2(k2,M_halo_mid,halo_stuff,i) * M_halo_mid
+	return(integrand_I12_array_w_M)
+
 def I_11(myTriangle,halo_stuff,i):
 	k1 = myTriangle.k1
 	if i==1:
@@ -683,6 +717,23 @@ def I_11(myTriangle,halo_stuff,i):
 		transformI11 += (M_halo_mid/rho_background_matter) * halo_stuff.dn_dm_array[i] * (bias_1 - halo_stuff.bias1_array[i] * y_halo_parameter2(k1,M_halo_mid,halo_stuff,i)) * delta_M_halo
 		#print (I11)
 	return(bias_1 - transformI11)
+
+def integrand_I_11(myTriangle,halo_stuff,i):
+	k1 = myTriangle.k1
+	if i==1:
+		k1 = myTriangle.k2
+	if i==2:
+		k1 = myTriangle.k3
+	bias_1 = 1  + (2*p_halo - 1)/critical_density_parameter
+	integrand_I11_array_w_M = np.zeros(n_halo_integral_step)
+	for i in range(n_halo_integral_step):
+		epsilon = (M_halo_max/M_halo_min)**(1/n_halo_integral_step) - 1
+		delta_M_halo = M_halo_min* (M_halo_max/M_halo_min)**(i/n_halo_integral_step)*epsilon
+		#M_halo_i = delta_M_halo*i
+		#M_halo_mid = 1/2*(M_halo_i + (i+1)*delta_M_halo)
+		M_halo_mid = M_halo_min * (M_halo_max/M_halo_min)**(i/n_halo_integral_step) * (1 + epsilon/2)
+		integrand_I11_array_w_M[i] = (bias_1 - ((M_halo_mid/rho_background_matter) * halo_stuff.dn_dm_array[i] * (bias_1 - halo_stuff.bias1_array[i] * y_halo_parameter2(k1,M_halo_mid,halo_stuff,i)))) * M_halo_mid
+	return(integrand_I11_array_w_M)
 
 
 
@@ -743,6 +794,23 @@ def I_21(myTriangle,halo_stuff,i):
 		#print (I21)
 	return(bias_2 - transformI21)
 
+def integrand_I_21(myTriangle,halo_stuff,i):
+	k1 = myTriangle.k1
+	if i==1:
+		k1 = myTriangle.k2
+	if i==2:
+		k1 = myTriangle.k3
+	bias_2 = -8/21 * (1-2*p_halo)/critical_density_parameter + 2*p_halo*(2*p_halo - 1)/critical_density_parameter**2
+	integrand_I21_array_w_M = np.zeros(n_halo_integral_step)
+	for i in range(n_halo_integral_step):
+		epsilon = (M_halo_max/M_halo_min)**(1/n_halo_integral_step) - 1
+		delta_M_halo = M_halo_min* (M_halo_max/M_halo_min)**(i/n_halo_integral_step)*epsilon
+		#M_halo_i = delta_M_halo*i
+		#M_halo_mid = 1/2*(M_halo_i + (i+1)*delta_M_halo)
+		M_halo_mid = M_halo_min * (M_halo_max/M_halo_min)**(i/n_halo_integral_step) * (1 + epsilon/2)
+		integrand_I21_array_w_M[i] = (bias_2 - ((M_halo_mid/rho_background_matter) * halo_stuff.dn_dm_array[i] * (bias_2 - halo_stuff.bias2_array[i] * y_halo_parameter2(k1,M_halo_mid,halo_stuff,i)))) * M_halo_mid
+	return(integrand_I21_array_w_M)
+
 
 #def I_21(myTriangle,halo_stuff,i):
 #	k1 = myTriangle.k1
@@ -767,17 +835,46 @@ def I_21(myTriangle,halo_stuff,i):
 #print(I_03(test_tri,halo_data),I_12(test_tri,halo_data,0),I_11(test_tri,halo_data,0),transform_I_11(test_tri,halo_data,0),I_01(test_tri,halo_data,0),I_21(test_tri,halo_data,0),transform_I_21(test_tri,halo_data,0))
 #sys.exit()
 
+test_triangle = kTriangle(5,5,2/3*np.pi) 
+halo_data = halo_info(0,M_halo_min,M_halo_max,n_halo_integral_step)
+M_halo_mid_array = np.zeros(n_halo_integral_step)
+for i in range(n_halo_integral_step):
+	epsilon = (M_halo_max/M_halo_min)**(1/n_halo_integral_step) - 1
+	delta_M_halo = M_halo_min* (M_halo_max/M_halo_min)**(i/n_halo_integral_step)*epsilon
+	M_halo_mid = M_halo_min * (M_halo_max/M_halo_min)**(i/n_halo_integral_step) * (1 + epsilon/2)
+	M_halo_mid_array[i] = M_halo_mid
+	#I03_array[i] = ((M_halo_array[i]/rho_background_matter)**3 * halo_stuff.dn_dm_array[i] * y_halo_parameter2(myTriangle.k1,M_halo_mid,halo_stuff,i) * y_halo_parameter2(myTriangle.k2,M_halo_mid,halo_stuff,i) * y_halo_parameter2(myTriangle.k3,M_halo_mid,halo_stuff,i) *delta_M_halo)*
+
+
+plt.xscale("log")
+#plt.yscale("log")
+plt.plot(M_halo_mid_array,integrand_I_03(test_triangle,halo_data))
+plt.show()
+plt.xscale("log")
+#plt.yscale("log")
+plt.plot(M_halo_mid_array,integrand_I_11(test_triangle,halo_data,0))
+plt.show()
+plt.xscale("log")
+#plt.yscale("log")
+plt.plot(M_halo_mid_array,integrand_I_12(test_triangle,halo_data,0))
+plt.show()
+plt.xscale("log")
+#plt.yscale("log")
+plt.plot(M_halo_mid_array,integrand_I_21(test_triangle,halo_data,0))
+plt.show()
+sys.exit()
+
 #defining single, double, and triple halo contribution to halo model bispectrum as formulated in https://iopscience.iop.org/article/10.1086/318660/fulltext/
 
 #single halo contribution is simply I_03 function
 
 #double halo contribution
 def double_halo_bispectrum(z,myTriangle,halo_stuff):
-	return(I_12(myTriangle,halo_stuff,0) * I_11(myTriangle,halo_stuff,2) * PSetNL.P_interp(z,myTriangle.k3) + I_12(myTriangle,halo_stuff,2) * I_11(myTriangle,halo_stuff,1) * PSetNL.P_interp(z,myTriangle.k2) + I_12(myTriangle,halo_stuff,1) * I_11(myTriangle,halo_stuff,0) * PSetNL.P_interp(z,myTriangle.k1))
+	return(I_12(myTriangle,halo_stuff,0) * I_11(myTriangle,halo_stuff,2) * PSetLin.P_interp(z,myTriangle.k3) + I_12(myTriangle,halo_stuff,2) * I_11(myTriangle,halo_stuff,1) * PSetLin.P_interp(z,myTriangle.k2) + I_12(myTriangle,halo_stuff,1) * I_11(myTriangle,halo_stuff,0) * PSetLin.P_interp(z,myTriangle.k1))
 
 #triple halo contribution
 def triple_halo_bispectrum(z,myTriangle,halo_stuff):
-	return((2*analy_F(myTriangle,0)*I_11(myTriangle,halo_stuff,2) + I_21(myTriangle,halo_stuff,2)) * I_11(myTriangle,halo_stuff,0)*I_11(myTriangle,halo_stuff,1)*PSetNL.P_interp(z,myTriangle.k1)*PSetNL.P_interp(z,myTriangle.k2) + (2*analy_F(myTriangle,2)*I_11(myTriangle,halo_stuff,1) + I_21(myTriangle,halo_stuff,1)) * I_11(myTriangle,halo_stuff,2)*I_11(myTriangle,halo_stuff,0)*PSetNL.P_interp(z,myTriangle.k3)*PSetNL.P_interp(z,myTriangle.k1) + (2*analy_F(myTriangle,1)*I_11(myTriangle,halo_stuff,0) + I_21(myTriangle,halo_stuff,0)) * I_11(myTriangle,halo_stuff,1)*I_11(myTriangle,halo_stuff,2)*PSetNL.P_interp(z,myTriangle.k2)*PSetNL.P_interp(z,myTriangle.k3))
+	return((2*analy_F(myTriangle,0)*I_11(myTriangle,halo_stuff,2) + I_21(myTriangle,halo_stuff,2)) * I_11(myTriangle,halo_stuff,0)*I_11(myTriangle,halo_stuff,1)*PSetLin.P_interp(z,myTriangle.k1)*PSetLin.P_interp(z,myTriangle.k2) + (2*analy_F(myTriangle,2)*I_11(myTriangle,halo_stuff,1) + I_21(myTriangle,halo_stuff,1)) * I_11(myTriangle,halo_stuff,2)*I_11(myTriangle,halo_stuff,0)*PSetLin.P_interp(z,myTriangle.k3)*PSetLin.P_interp(z,myTriangle.k1) + (2*analy_F(myTriangle,1)*I_11(myTriangle,halo_stuff,0) + I_21(myTriangle,halo_stuff,0)) * I_11(myTriangle,halo_stuff,1)*I_11(myTriangle,halo_stuff,2)*PSetLin.P_interp(z,myTriangle.k2)*PSetLin.P_interp(z,myTriangle.k3))
 
 #permutations for triple_halo_bispectrum
 # first - (2*perturb_F(z,myTriangle,0)*I_11(z,myTriangle,2) + I_21(z,myTriangle,2)) * I_11(z,myTriangle,0)*I_11(z,myTriangle,1)*PSetNL.P_interp(z,myTriangle.k1)*PSetNL.P_interp(z,myTriangle.k2)
