@@ -808,7 +808,7 @@ def integrand_I_21(myTriangle,halo_stuff,i):
 		#M_halo_i = delta_M_halo*i
 		#M_halo_mid = 1/2*(M_halo_i + (i+1)*delta_M_halo)
 		M_halo_mid = M_halo_min * (M_halo_max/M_halo_min)**(i/n_halo_integral_step) * (1 + epsilon/2)
-		integrand_I21_array_w_M[i] = (bias_2 - ((M_halo_mid/rho_background_matter) * halo_stuff.dn_dm_array[i] * (bias_2 - halo_stuff.bias2_array[i] * y_halo_parameter2(k1,M_halo_mid,halo_stuff,i)))) * M_halo_mid
+		integrand_I21_array_w_M[i] = (M_halo_mid/rho_background_matter) * halo_stuff.dn_dm_array[i] * (bias_2 - halo_stuff.bias2_array[i] * y_halo_parameter2(k1,M_halo_mid,halo_stuff,i)) * M_halo_mid
 	return(integrand_I21_array_w_M)
 
 
