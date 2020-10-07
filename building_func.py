@@ -845,21 +845,36 @@ for i in range(n_halo_integral_step):
 	M_halo_mid_array[i] = M_halo_mid
 	#I03_array[i] = ((M_halo_array[i]/rho_background_matter)**3 * halo_stuff.dn_dm_array[i] * y_halo_parameter2(myTriangle.k1,M_halo_mid,halo_stuff,i) * y_halo_parameter2(myTriangle.k2,M_halo_mid,halo_stuff,i) * y_halo_parameter2(myTriangle.k3,M_halo_mid,halo_stuff,i) *delta_M_halo)*
 
+k_I11_array = np.logspace(-2,2,n_halo_integral_step)
+I11_array = np.zeros(n_halo_integral_step)
+for i in range(n_halo_integral_step):
+	I11_array[i] = I_11(kTriangle(k_I11_array[i],k_I11_array[i],2/3*np.pi),halo_data,0)
 
 plt.xscale("log")
 #plt.yscale("log")
+plt.title(I11 vs k)
+plt.plot(k_I11_array,I11_array)
+plt.show()
+
+sys.exit()
+plt.xscale("log")
+#plt.yscale("log")
+plt.title(I03)
 plt.plot(M_halo_mid_array,integrand_I_03(test_triangle,halo_data))
 plt.show()
 plt.xscale("log")
 #plt.yscale("log")
+plt.title(I11)
 plt.plot(M_halo_mid_array,integrand_I_11(test_triangle,halo_data,0))
 plt.show()
 plt.xscale("log")
 #plt.yscale("log")
+plt.title(I12)
 plt.plot(M_halo_mid_array,integrand_I_12(test_triangle,halo_data,0))
 plt.show()
 plt.xscale("log")
 #plt.yscale("log")
+plt.title(I21)
 plt.plot(M_halo_mid_array,integrand_I_21(test_triangle,halo_data,0))
 plt.show()
 sys.exit()
