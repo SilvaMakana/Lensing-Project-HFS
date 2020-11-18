@@ -1020,15 +1020,23 @@ class parameters_stellarMvshaloM(object):
 
 
 def function_f(x,stellarstuff):
-	return(-np.log(10**(stellarstuff.parameter_alpha*x)+1) + stellarstuff.parameter_delta*(np.log(1 + np.exp(x)))**stellarstuff.parameter_gamma/(1 + np.exp(-x)))
+	return(-np.log10(10**(stellarstuff.parameter_alpha*x)+1) + stellarstuff.parameter_delta*(np.log10(1 + np.exp(x)))**stellarstuff.parameter_gamma/(1 + np.exp(-x)))
 
-
+#logarithmic function of stella mass as a function of halo mass
 def logM_stellar(M,stellarstuff):
-	return(stellarstuff.log_parameter_epsilon + stellarstuff.log_parameter_M1 + function_f((np.log(M) - stellarstuff.log_parameter_M1),stellarstuff) - function_f(0,stellarstuff))
+	return(stellarstuff.log_parameter_epsilon + stellarstuff.log_parameter_M1 + function_f((np.log10(M) - stellarstuff.log_parameter_M1),stellarstuff) - function_f(0,stellarstuff))
 
 stellar_parameters = parameters_stellarMvshaloM(0.1)
-
-print(logM_stellar(10**10,stellar_parameters))
+M_halostellar_array = np.logspace(10,15,100)
+logM_stellar_array = np.zeros(100)
+for i in range(100):
+	logM_stellar_array[i] = logM_stellar(M_halostellar_array[i],stellar_parameters)
+plt.xscale("log")
+plt.yscale("log")
+plt.title("Stellar Mass vs Halo Mass")
+plt.plot(M_halostellar_array,10**(logM_stellar_array))
+plt.show()
+#print(logM_stellar(10**10,stellar_parameters))
 
 
 
