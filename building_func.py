@@ -1020,23 +1020,33 @@ class parameters_stellarMvshaloM(object):
 
 
 def function_f(x,stellarstuff):
-	return(-np.log10(10**(stellarstuff.parameter_alpha*x)+1) + stellarstuff.parameter_delta*(np.log10(1 + np.exp(x)))**stellarstuff.parameter_gamma/(1 + np.exp(-x)))
+	return(-np.log10(10**(stellarstuff.parameter_alpha*x)+1) + stellarstuff.parameter_delta*(np.log10(1 + np.exp(x)))**stellarstuff.parameter_gamma/(1 + np.exp(10**(-x))))
 
 #logarithmic function of stella mass as a function of halo mass
-def logM_stellar(M,stellarstuff):
-	return(stellarstuff.log_parameter_epsilon + stellarstuff.log_parameter_M1 + function_f((np.log10(M) - stellarstuff.log_parameter_M1),stellarstuff) - function_f(0,stellarstuff))
+def logM_stellar(M_halo,stellarstuff):
+	return(stellarstuff.log_parameter_epsilon + stellarstuff.log_parameter_M1 + function_f((np.log10(M_halo) - stellarstuff.log_parameter_M1),stellarstuff) - function_f(0,stellarstuff))
 
 stellar_parameters = parameters_stellarMvshaloM(0.1)
-M_halostellar_array = np.logspace(10,15,100)
-logM_stellar_array = np.zeros(100)
-for i in range(100):
-	logM_stellar_array[i] = logM_stellar(M_halostellar_array[i],stellar_parameters)
-plt.xscale("log")
-plt.yscale("log")
-plt.title("Stellar Mass vs Halo Mass")
-plt.plot(M_halostellar_array,10**(logM_stellar_array))
-plt.show()
-#print(logM_stellar(10**10,stellar_parameters))
+#M_halostellar_array = np.logspace(10,15,100)
+#logM_stellar_array = np.zeros(100)
+#for i in range(100):
+#	logM_stellar_array[i] = logM_stellar(M_halostellar_array[i],stellar_parameters)
+#plt.xscale("log")
+#plt.yscale("log")
+#plt.title("Dust Mass vs Halo Mass")
+#plt.plot(M_halostellar_array,0.015*10**(logM_stellar_array))
+#plt.show()
+def M_dust_optimistic(M_halo,stellarstuff):
+	return(0.015*10**(logM_stellar(M_halo,stellarstuff)))
 
+def normalization_rho(M_halo,stellarstuff):
+	r_integral = 0
+	delta_r_halo = r_halo_virial(M_halo)/n
+	r_halo_mid = np.linspace(0.5*delta_r_halo,(n-1/2)*delta_r_halo,n)
+	r_integral = np.sum((r_halo_mid/0.001)**(-1.84))
+	return(M_dust_optimistic(M_halo,stellarstuff)/(4*np.pi * r_integral))
 
+def rho_dust(r_halo,M_halo,stellarstuff):
+	return(normalization_rho(M_halo,stellarstuff)*(r_halo/0.001)**(-1.84))
 
+print(rho_dust(0.01,10**11,stellar_parameters))
