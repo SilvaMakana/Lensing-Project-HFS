@@ -1043,10 +1043,12 @@ def normalization_rho(M_halo,stellarstuff):
 	r_integral = 0
 	delta_r_halo = r_halo_virial(M_halo)/n
 	r_halo_mid = np.linspace(0.5*delta_r_halo,(n-1/2)*delta_r_halo,n)
-	r_integral = np.sum((r_halo_mid/0.001)**(-1.84))
+	r_integral = np.sum((r_halo_mid/0.001)**(-1.84) * r_halo_mid**2) * delta_r_halo
 	return(M_dust_optimistic(M_halo,stellarstuff)/(4*np.pi * r_integral))
 
 def rho_dust(r_halo,M_halo,stellarstuff):
 	return(normalization_rho(M_halo,stellarstuff)*(r_halo/0.001)**(-1.84))
 
-print(rho_dust(0.01,10**11,stellar_parameters))
+
+
+#print(rho_dust(0.01,10**11,stellar_parameters))
