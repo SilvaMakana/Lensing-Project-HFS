@@ -1066,6 +1066,12 @@ def u_dust_halo_parameter(k,M,stellarstuff):
 	dust_parameter = np.sum(r_dust_mid**2 * np.sin(k*r_dust_mid)/(k*r_dust_mid) * rho_dust(r_dust_mid,M,stellarstuff)) * delta_r_dust
 	return(1/M * 4*np.pi * dust_parameter)
 
+def rho_bar_dust(z,stellarstuff):
+	rhobardust = 0
+	delta_M_halo = M_halo_max/n
+	M_halo_mid = np.linspace(0.5*delta_M_halo,(n-1/2)*delta_M_halo,n)
+	rhobardust = np.sum(M_dust_optimistic(M_halo_mid,stellarstuff) * halo_distribution_function(z,M_halo_mid)) * delta_M_halo
+
 #class profile_function(object):
 #	def __init__(in1,in2,in3,self):
 #		#self.myTriangle = in1
@@ -1092,8 +1098,8 @@ def u_dust_halo_parameter(k,M,stellarstuff):
 #
 #
 test_tri = kTriangle(0.01,0.01,2/3*np.pi)
-stellar_info = parameters_stellarMvshaloM(0.1)
-halo_data = halo_info(0.1,M_halo_min,M_halo_max,n_halo_integral_step)
+stellar_info = parameters_stellarMvshaloM(0)
+halo_data = halo_info(0,M_halo_min,M_halo_max,n_halo_integral_step)
 #print(profile_function(10**10,0,0),profile_function(10**10,0,1),profile_function(10**10,0,2))
 #sys.exit()
 
@@ -1204,8 +1210,8 @@ def triple_halo_dust_bispectrum(z,myTriangle,halo_stuff,stellarstuff):
 
 #total halo dust bispectrum
 def total_halo_dust_bispectrum(z,myTriangle,halo_stuff,stellarstuff):
-	return(I_03_dust(myTriangle,halo_stuff,stellarstuff) + double_halo_dust_bispectrum(z,myTriangle,halo_stuff,stellarstuff) + triple_halo_dust_bispectrum(z,myTriangle,halo_stuff,stellarstuff))
+	return((I_03_dust(myTriangle,halo_stuff,stellarstuff) + double_halo_dust_bispectrum(z,myTriangle,halo_stuff,stellarstuff) + triple_halo_dust_bispectrum(z,myTriangle,halo_stuff,stellarstuff))/rho_bar_dust(z,stellarstuff))
 
-print(total_halo_dust_bispectrum(0.1,test_tri,halo_data,stellar_info))
+print(rho_bar_dust(0,stellar_info),(0.01)**3/(2*np.pi**2)*total_halo_dust_bispectrum(0,test_tri,halo_data,stellar_info)**(1/2),(0.01)**3/(2*np.pi**2)*total_halo_bispectrum(0,test_tri,halo_data)**(1/2))
 
 #print(I_03(test_tri,halo_data),I_03_dust(test_tri,halo_data,stellar_info),I_11(test_tri,halo_data,0),I_11_dust(test_tri,halo_data,stellar_info,0),I_12(test_tri,halo_data,0),I_12_dust(test_tri,halo_data,stellar_info,0),I_21(test_tri,halo_data,0),I_21_dust(test_tri,halo_data,stellar_info,0))
