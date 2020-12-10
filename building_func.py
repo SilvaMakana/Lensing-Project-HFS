@@ -1061,11 +1061,15 @@ def rho_dust(r_halo,M_halo,stellarstuff):
 #dimensionaless Fourier Transform of dust density, similar to y_halo_parameter
 def u_dust_halo_parameter(k,M,stellarstuff):
 	dust_parameter = 0
+	M_dust_opt = M_dust_optimistic(M,stellarstuff)
 	delta_r_dust = r_halo_virial(M)/n
 	r_dust_mid = np.linspace(0.5*delta_r_dust,(n-1/2)*delta_r_dust,n)
 	dust_parameter = np.sum(r_dust_mid**2 * np.sin(k*r_dust_mid)/(k*r_dust_mid) * rho_dust(r_dust_mid,M,stellarstuff)) * delta_r_dust
-	return(1/M * 4*np.pi * dust_parameter)
+	return(1/M_dust_opt * 4*np.pi * dust_parameter)
 
+stellar_info = parameters_stellarMvshaloM(0)
+print(u_dust_halo_parameter(0.01,10**8,stellar_info),u_dust_halo_parameter(0.01,10**10,stellar_info),u_dust_halo_parameter(0.01,10**12,stellar_info),M_dust_optimistic(10**8,stellar_info)/10**8,M_dust_optimistic(10**10,stellar_info)/10**10,M_dust_optimistic(10**12,stellar_info)/10**12)
+sys.exit()
 def rho_bar_dust(z,stellarstuff):
 	rhobardust = 0
 	delta_M_halo = M_halo_max/n
@@ -1221,6 +1225,8 @@ def total_halo_dust_bispectrum(z,myTriangle,halo_stuff,stellarstuff):
 
 stellar_info = parameters_stellarMvshaloM(0)
 halo_data = halo_info(0,M_halo_min,M_halo_max,n_halo_integral_step)
+print(rho_bar_dust(0,stellar_info))
+sys.exit()
 log_halo_k_array = np.logspace(-2,2,100)
 for j in range (100):
 	#reduced_shear_value = reduced_shear(0,10000,1,1,log_l_array[j],0)[0,0]
