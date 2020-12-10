@@ -1071,6 +1071,7 @@ def rho_bar_dust(z,stellarstuff):
 	delta_M_halo = M_halo_max/n
 	M_halo_mid = np.linspace(0.5*delta_M_halo,(n-1/2)*delta_M_halo,n)
 	rhobardust = np.sum(M_dust_optimistic(M_halo_mid,stellarstuff) * halo_distribution_function(z,M_halo_mid)) * delta_M_halo
+	return(rhobardust)
 
 #class profile_function(object):
 #	def __init__(in1,in2,in3,self):
@@ -1098,8 +1099,7 @@ def rho_bar_dust(z,stellarstuff):
 #
 #
 test_tri = kTriangle(0.01,0.01,2/3*np.pi)
-stellar_info = parameters_stellarMvshaloM(0)
-halo_data = halo_info(0,M_halo_min,M_halo_max,n_halo_integral_step)
+
 #print(profile_function(10**10,0,0),profile_function(10**10,0,1),profile_function(10**10,0,2))
 #sys.exit()
 
@@ -1148,8 +1148,9 @@ def I_12_dust(myTriangle,halo_stuff,stellarstuff,index):
 #sys.exit()
 
 def I_11_dust(myTriangle,halo_stuff,stellarstuff,index):
-	bias_1 = 1  + (2*p_halo - 1)/critical_density_parameter
-	transformI11dust = 0
+	#bias_1 = 1  + (2*p_halo - 1)/critical_density_parameter
+	#transformI11dust = 0
+	I11dust = 0
 	for i in range(n_halo_integral_step):
 		epsilon = (M_halo_max/M_halo_min)**(1/n_halo_integral_step) - 1
 		delta_M_halo = M_halo_min* (M_halo_max/M_halo_min)**(i/n_halo_integral_step)*epsilon
@@ -1162,19 +1163,22 @@ def I_11_dust(myTriangle,halo_stuff,stellarstuff,index):
 		prefactor = (M_halo_mid/rho_background_matter)
 		if index==1:
 			k1 = myTriangle.k2
-			profile_func = (M_halo_mid/rho_background_matter)*y_halo_parameter2(k1,M_halo_mid,halo_stuff,i)
+			profile_func = y_halo_parameter2(k1,M_halo_mid,halo_stuff,i)
 			prefactor = (M_halo_mid/rho_background_matter)
 		if index==2:
 			k1 = myTriangle.k3
-			profile_func = (M_dust_optimistic(M_halo_mid,stellarstuff))*u_dust_halo_parameter(k1,M_halo_mid,stellarstuff)
+			profile_func = u_dust_halo_parameter(k1,M_halo_mid,stellarstuff)
 			prefactor = M_dust_optimistic(M_halo_mid,stellarstuff)
-		transformI11dust += prefactor * halo_stuff.dn_dm_array[i] * (bias_1 - halo_stuff.bias1_array[i] * profile_func) * delta_M_halo
+		I11dust += prefactor * halo_stuff.dn_dm_array[i] * halo_stuff.bias1_array[i] * profile_func * delta_M_halo
+		#transformI11dust += prefactor * halo_stuff.dn_dm_array[i] * (bias_1 - halo_stuff.bias1_array[i] * profile_func) * delta_M_halo
 		#print (I11)
-	return(bias_1 - transformI11dust)
+	#return(bias_1 - transformI11dust)
+	return(I11dust)
 
 def I_21_dust(myTriangle,halo_stuff,stellarstuff,index):
-	bias_2 = -8/21 * (1-2*p_halo)/critical_density_parameter + 2*p_halo*(2*p_halo - 1)/critical_density_parameter**2
-	transformI21dust = 0
+	#bias_2 = -8/21 * (1-2*p_halo)/critical_density_parameter + 2*p_halo*(2*p_halo - 1)/critical_density_parameter**2
+	#transformI21dust = 0
+	I21dust = 0
 	for i in range(n_halo_integral_step):
 		epsilon = (M_halo_max/M_halo_min)**(1/n_halo_integral_step) - 1
 		delta_M_halo = M_halo_min* (M_halo_max/M_halo_min)**(i/n_halo_integral_step)*epsilon
@@ -1187,15 +1191,16 @@ def I_21_dust(myTriangle,halo_stuff,stellarstuff,index):
 		prefactor = (M_halo_mid/rho_background_matter)
 		if index==1:
 			k1 = myTriangle.k2
-			profile_func = (M_halo_mid/rho_background_matter)*y_halo_parameter2(k1,M_halo_mid,halo_stuff,i)
+			profile_func = y_halo_parameter2(k1,M_halo_mid,halo_stuff,i)
 			prefactor = (M_halo_mid/rho_background_matter)
 		if index==2:
 			k1 = myTriangle.k3
-			profile_func = (M_dust_optimistic(M_halo_mid,stellarstuff))*u_dust_halo_parameter(k1,M_halo_mid,stellarstuff)
+			profile_func = u_dust_halo_parameter(k1,M_halo_mid,stellarstuff)
 			prefactor = M_dust_optimistic(M_halo_mid,stellarstuff)
-		transformI21dust += prefactor * halo_stuff.dn_dm_array[i] * (bias_2 - halo_stuff.bias2_array[i] * profile_func) * delta_M_halo
+		I21dust += prefactor * halo_stuff.dn_dm_array[i] * halo_stuff.bias2_array[i] * profile_func * delta_M_halo
 		#print (I21)
-	return(bias_2 - transformI21dust)
+	#return(bias_2 - transformI21dust)
+	return(I21dust)
 
 
 #single halo dust contribution is I_03_dust
@@ -1212,6 +1217,25 @@ def triple_halo_dust_bispectrum(z,myTriangle,halo_stuff,stellarstuff):
 def total_halo_dust_bispectrum(z,myTriangle,halo_stuff,stellarstuff):
 	return((I_03_dust(myTriangle,halo_stuff,stellarstuff) + double_halo_dust_bispectrum(z,myTriangle,halo_stuff,stellarstuff) + triple_halo_dust_bispectrum(z,myTriangle,halo_stuff,stellarstuff))/rho_bar_dust(z,stellarstuff))
 
-print(rho_bar_dust(0,stellar_info),(0.01)**3/(2*np.pi**2)*total_halo_dust_bispectrum(0,test_tri,halo_data,stellar_info)**(1/2),(0.01)**3/(2*np.pi**2)*total_halo_bispectrum(0,test_tri,halo_data)**(1/2))
+
+
+stellar_info = parameters_stellarMvshaloM(0)
+halo_data = halo_info(0,M_halo_min,M_halo_max,n_halo_integral_step)
+log_halo_k_array = np.logspace(-2,2,100)
+for j in range (100):
+	#reduced_shear_value = reduced_shear(0,10000,1,1,log_l_array[j],0)[0,0]
+	#tri = kTriangle(log_halo_k_array[i],log_halo_k_array[i],2/3*np.pi)
+	B1_dust = I_03_dust(kTriangle(log_halo_k_array[j],log_halo_k_array[j],2/3*np.pi),halo_data,stellar_info)
+	B2_dust = double_halo_dust_bispectrum(0,kTriangle(log_halo_k_array[j],log_halo_k_array[j],2/3*np.pi),halo_data,stellar_info)[0,0]
+	B3_dust = triple_halo_dust_bispectrum(0,kTriangle(log_halo_k_array[j],log_halo_k_array[j],2/3*np.pi),halo_data,stellar_info)[0,0]
+	total_halo_dust_bispectrum_value = total_halo_dust_bispectrum(0,kTriangle(log_halo_k_array[j],log_halo_k_array[j],2/3*np.pi),halo_data,stellar_info)[0,0]
+	total_halo_bispectrum_value = total_halo_bispectrum(0,kTriangle(log_halo_k_array[j],log_halo_k_array[j],2/3*np.pi),halo_data)[0,0]
+	matter_bispectrum_perturb = B_matterspec(0,kTriangle(log_halo_k_array[j],log_halo_k_array[j],2/3*np.pi))[0,0]
+	#plt.scatter(log_halo_k_array[j],total_halo_bispectrum_value)
+#	print(log_halo_k_array[j],(log_halo_k_array[j])**3/(2*np.pi**2)*(B1)**(1/2),(log_halo_k_array[j])**3/(2*np.pi**2)*(B2)**(1/2),(log_halo_k_array[j])**3/(2*np.pi**2)*(B3)**(1/2),(log_halo_k_array[j])**3/(2*np.pi**2)*(total_halo_bispectrum_value)**(1/2),(log_halo_k_array[j])**3/(2*np.pi**2)*(matter_bispectrum_perturb)**(1/2))
+	print(log_halo_k_array[j],(log_halo_k_array[j])**3/(2*np.pi**2)*(B1_dust)**(1/2),(log_halo_k_array[j])**3/(2*np.pi**2)*(B2_dust)**(1/2),(log_halo_k_array[j])**3/(2*np.pi**2)*(B3_dust)**(1/2),(log_halo_k_array[j])**3/(2*np.pi**2)*(total_halo_dust_bispectrum_value)**(1/2),(log_halo_k_array[j])**3/(2*np.pi**2)*(total_halo_bispectrum_value)**(1/2),(log_halo_k_array[j])**3/(2*np.pi**2)*(matter_bispectrum_perturb)**(1/2))
+	#print(log_halo_k_array[j],(log_halo_k_array[j])**3/(2*np.pi**2)*(total_halo_bispectrum_value)**(1/2),(log_halo_k_array[j])**3/(2*np.pi**2)*(matter_bispectrum_perturb)**(1/2))
+
+#print(rho_bar_dust(0,stellar_info),(0.01)**3/(2*np.pi**2)*total_halo_dust_bispectrum(0,test_tri,halo_data,stellar_info)**(1/2),(0.01)**3/(2*np.pi**2)*total_halo_bispectrum(0,test_tri,halo_data)**(1/2))
 
 #print(I_03(test_tri,halo_data),I_03_dust(test_tri,halo_data,stellar_info),I_11(test_tri,halo_data,0),I_11_dust(test_tri,halo_data,stellar_info,0),I_12(test_tri,halo_data,0),I_12_dust(test_tri,halo_data,stellar_info,0),I_21(test_tri,halo_data,0),I_21_dust(test_tri,halo_data,stellar_info,0))
