@@ -1026,7 +1026,7 @@ def function_f(x,stellarstuff):
 def logM_stellar(M_halo,stellarstuff):
 	return(stellarstuff.log_parameter_epsilon + stellarstuff.log_parameter_M1 + function_f((np.log10(M_halo) - stellarstuff.log_parameter_M1),stellarstuff) - function_f(0,stellarstuff))
 
-stellar_parameters = parameters_stellarMvshaloM(0.1)
+#stellar_parameters = parameters_stellarMvshaloM(0.1)
 #M_halostellar_array = np.logspace(10,15,100)
 #logM_stellar_array = np.zeros(100)
 #for i in range(100):
@@ -1034,8 +1034,10 @@ stellar_parameters = parameters_stellarMvshaloM(0.1)
 #plt.xscale("log")
 #plt.yscale("log")
 #plt.title("Dust Mass vs Halo Mass")
+#plt.plot(4.1*10**11,101934865595.08029,"ro")
 #plt.plot(M_halostellar_array,0.015*10**(logM_stellar_array))
 #plt.show()
+#sys.exit()
 
 #Mass of dust as a function of stellar mass, this is the most optimistic case where M_dust = yield * M_stellar
 def M_dust_optimistic(M_halo,stellarstuff):
@@ -1053,6 +1055,21 @@ def normalization_rho(M_halo,stellarstuff):
 def rho_dust(r_halo,M_halo,stellarstuff):
 	return(normalization_rho(M_halo,stellarstuff)*(r_halo)**(-1.84))
 
+#calculating the amount of dust from a halo of virial radius r_virial. This is given assuming the surface density of dust is a power law and thus the volumetric density is also a power law
+def Menard_value(r_halo):
+	K_ext_V = 3.21689961*10**(-12) #units of Mpc^2/M_solar, values quoted in arXiv:0902.4240v1 Eq.(43) is 1.54*10^(4) cm^2/g
+	r_halo_eff = 0.02 #lower integration limit since we integrate an annulus with the galaxy at the center
+	Gamma_num = 1.0530 #Gamma function of power of volumetric density profile (1.84) divided by 2
+	Gamma_denom = 2.1104 #Gamma function of power of volumetric density profile (1.84) minus 1, then divided by 2
+	Menardvalue = 0
+	delta_r_halo = (r_halo - r_halo_eff)/n
+	r_halo_mid = np.linspace(0.5*delta_r_halo,(n-1/2)*delta_r_halo,n)
+	Menardvalue = np.sum((r_halo_mid)**(-1.84) * r_halo_mid**2) * delta_r_halo
+	#return(Menardvalue)	
+	return(Gamma_num/(*np.sqrt(np.pi))*4*np.pi*np.log(10)/(2.5*K_ext_V)*Menardvalue)
+
+print(Menard_value(0.177))
+sys.exit()
 
 ##And now, I am assmebling the matter matter dust bispectrum
 ##This will be similar to the classic bispectrum set up but now I will denote the third leg of the k-triangle in k-space to the dust component
@@ -1068,7 +1085,9 @@ def u_dust_halo_parameter(k,M,stellarstuff):
 	return(1/M_dust_opt * 4*np.pi * dust_parameter)
 
 stellar_info = parameters_stellarMvshaloM(0)
-print(u_dust_halo_parameter(0.01,10**8,stellar_info),u_dust_halo_parameter(0.01,10**10,stellar_info),u_dust_halo_parameter(0.01,10**12,stellar_info),M_dust_optimistic(10**8,stellar_info)/10**8,M_dust_optimistic(10**10,stellar_info)/10**10,M_dust_optimistic(10**12,stellar_info)/10**12)
+#print(u_dust_halo_parameter(0.01,10**8,stellar_info),u_dust_halo_parameter(0.01,10**10,stellar_info),u_dust_halo_parameter(0.01,10**12,stellar_info),M_dust_optimistic(10**8,stellar_info)/10**8,M_dust_optimistic(10**10,stellar_info)/10**10,M_dust_optimistic(10**12,stellar_info)/10**12)
+#print(r_halo_virial(4.1*10**11))
+#print(4/3 * np.pi * (.177)**3 * 200 * rho_background_matter,M_dust_optimistic(4/3 * np.pi * (.177)**3 * 200 * rho_background_matter,stellar_info))
 sys.exit()
 def rho_bar_dust(z,stellarstuff):
 	rhobardust = 0
