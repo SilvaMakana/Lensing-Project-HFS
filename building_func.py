@@ -1066,7 +1066,7 @@ def Menard_value(r_halo):
 	r_halo_mid = np.linspace(0.5*delta_r_halo,(n-1/2)*delta_r_halo,n)
 	Menardvalue = np.sum((r_halo_mid)**(-1.84) * r_halo_mid**2) * delta_r_halo
 	#return(Menardvalue)	
-	return(Gamma_num/(*np.sqrt(np.pi))*4*np.pi*np.log(10)/(2.5*K_ext_V)*Menardvalue)
+	return(Gamma_num/(Gamma_denom*np.sqrt(np.pi))*4*np.pi*np.log(10)/(2.5*K_ext_V)*Menardvalue)
 
 print(Menard_value(0.177))
 sys.exit()
