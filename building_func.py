@@ -1057,7 +1057,7 @@ def rho_dust(r_halo,M_halo,stellarstuff):
 
 #calculating the amount of dust from a halo of virial radius r_virial. This is given assuming the surface density of dust is a power law and thus the volumetric density is also a power law
 def Menard_value(r_halo):
-	K_ext_V = 3.21689961*10**(-12) #units of Mpc^2/M_solar, values quoted in arXiv:0902.4240v1 Eq.(43) is 1.54*10^(4) cm^2/g
+	K_ext_V = 3.21689961*10**(-12) / h_cosmo #units of (Mpc*h^-1)^2/(M_solar*h^-1), values quoted in arXiv:0902.4240v1 Eq.(43) is 1.54*10^(4) cm^2/g
 	r_halo_eff = 0.02 #lower integration limit since we integrate an annulus with the galaxy at the center
 	Gamma_num = 1.0530 #Gamma function of power of volumetric density profile (1.84) divided by 2
 	Gamma_denom = 2.1104 #Gamma function of power of volumetric density profile (1.84) minus 1, then divided by 2
