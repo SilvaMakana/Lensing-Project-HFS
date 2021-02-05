@@ -7,7 +7,7 @@ from math import e
 from scipy.interpolate import interp2d, interp1d,InterpolatedUnivariateSpline,RectBivariateSpline
 ## kstart is the first k value from the CLASS output files in units of h^-1Mpc ##
 kstart = 1.045e-5
-kend = 33.308
+kend = 210.674
 ##Integration step size##
 n=10000
 
@@ -1024,20 +1024,38 @@ def function_f(x,stellarstuff):
 
 #logarithmic function of stella mass as a function of halo mass
 def logM_stellar(M_halo,stellarstuff):
-
 	return(stellarstuff.log_parameter_epsilon + stellarstuff.log_parameter_M1 + function_f((np.log10(M_halo) - stellarstuff.log_parameter_M1),stellarstuff) - function_f(0,stellarstuff))
-stellar_parameters = parameters_stellarMvshaloM(0.1)
-M_halostellar_array = np.logspace(10,15,100)
-logM_stellar_array = np.zeros(100)
-for i in range(100):
-	logM_stellar_array[i] = logM_stellar(M_halostellar_array[i],stellar_parameters)
-plt.xscale("log")
-plt.yscale("log")
-plt.title("Dust Mass vs Halo Mass")
-plt.plot(4.1*10**11,6099905.342530267,"ro")
-plt.plot(M_halostellar_array,0.015*10**(logM_stellar_array))
-plt.show()
+
+#root equation to find the halo mass given a stellar mass, since the Behroozi et al. paper gives the stellar mass as a function of halo mass
+def root_M_halo_from_M_stellar(M_halo,M_stellar,stellarstuff):
+	return(10**(logM_stellar(M_halo,stellarstuff)) - M_stellar)
+
+#solving the root equation above, the limits of the halo mass range are from arXiv:1207.6105v2 in Fig. 7 the M_halo axis
+def M_halo_from_M_stellar(M_stellar,stellarstuff):
+	M_min_Behroozi = 10**10
+	M_max_Behroozi = 10**15
+	something = optimize.root_scalar(lambda M_halo: root_M_halo_from_M_stellar(M_halo,M_stellar,stellarstuff),bracket=[M_min_Behroozi,M_max_Behroozi],method ='brentq')
+	return(something.root)
+
+stellar_info = parameters_stellarMvshaloM(0)
+
+def infer_dust_mass(M_dust_measured,M_halo,r_ini):
+	return(M_dust_measured * (r_halo_virial(M_halo)/r_ini)**(-1.84))
+
+print(np.log10(M_halo_from_M_stellar(10**(10.53),stellar_info)),np.log10(infer_dust_mass(117489755.5,M_halo_from_M_stellar(10**(10.53),stellar_info),0.010/h_cosmo)))
 sys.exit()
+#stellar_parameters = parameters_stellarMvshaloM(0.1)
+#M_halostellar_array = np.logspace(10,15,100)
+#logM_stellar_array = np.zeros(100)
+#for i in range(100):
+#	logM_stellar_array[i] = logM_stellar(M_halostellar_array[i],stellar_parameters)
+#plt.xscale("log")
+#plt.yscale("log")
+#plt.title("Dust Mass vs Halo Mass")
+#plt.plot(4.1*10**11,4109506.229262641,"ro")
+#plt.plot(M_halostellar_array,0.015*10**(logM_stellar_array))
+#plt.show()
+##sys.exit()
 
 #Mass of dust as a function of stellar mass, this is the most optimistic case where M_dust = yield * M_stellar
 def M_dust_optimistic(M_halo,stellarstuff):
@@ -1064,16 +1082,16 @@ def Menard_value(r_halo):
 	Menardvalue = 0
 	delta_r_halo = (r_halo - r_halo_eff)/n
 	r_halo_mid = np.linspace(0.5*delta_r_halo,(n-1/2)*delta_r_halo,n)
-	Menardvalue = np.sum(4.14*10**(-3)*(r_halo_mid/0.1)**(-1.84) * r_halo_mid**2) * delta_r_halo
+	Menardvalue = np.sum(4.14*10**(-3) * 0.1**(0.84) * (r_halo_mid)**(-1.84) * r_halo_mid**2) * delta_r_halo
 	#return(Menardvalue)	
 	return(Gamma_num/(Gamma_denom*np.sqrt(np.pi))*4*np.pi*np.log(10)/(2.5*K_ext_V)*Menardvalue)
 
-print(Menard_value(0.177))
-sys.exit()
+#print(Menard_value(0.177))
+#sys.exit()
 
 ##And now, I am assmebling the matter matter dust bispectrum
 ##This will be similar to the classic bispectrum set up but now I will denote the third leg of the k-triangle in k-space to the dust component
-##this means that any functions of k3 that depend on density will be the dust density function, the other k-legs of the trianle will be y_halo_parameter
+##this means that any functions of k3 that depend on density will be the dust density function, the other k-legs of the triangle will be y_halo_parameter
 
 #dimensionaless Fourier Transform of dust density, similar to y_halo_parameter
 def u_dust_halo_parameter(k,M,stellarstuff):
@@ -1084,7 +1102,7 @@ def u_dust_halo_parameter(k,M,stellarstuff):
 	dust_parameter = np.sum(r_dust_mid**2 * np.sin(k*r_dust_mid)/(k*r_dust_mid) * rho_dust(r_dust_mid,M,stellarstuff)) * delta_r_dust
 	return(1/M_dust_opt * 4*np.pi * dust_parameter)
 
-stellar_info = parameters_stellarMvshaloM(0)
+
 #print(u_dust_halo_parameter(0.01,10**8,stellar_info),u_dust_halo_parameter(0.01,10**10,stellar_info),u_dust_halo_parameter(0.01,10**12,stellar_info),M_dust_optimistic(10**8,stellar_info)/10**8,M_dust_optimistic(10**10,stellar_info)/10**10,M_dust_optimistic(10**12,stellar_info)/10**12)
 #print(r_halo_virial(4.1*10**11))
 #print(4/3 * np.pi * (.177)**3 * 200 * rho_background_matter,M_dust_optimistic(4/3 * np.pi * (.177)**3 * 200 * rho_background_matter,stellar_info))
