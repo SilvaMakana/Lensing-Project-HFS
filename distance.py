@@ -14,3 +14,5 @@ def window_distance(distance2, distance1):
 		return (1/distance2 - 1/distance1)
 	else:
 		return(0)
+
+#WORK
