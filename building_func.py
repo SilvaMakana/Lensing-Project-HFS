@@ -1281,4 +1281,6 @@ for j in range (100):
 
 #print(rho_bar_dust(0,stellar_info),(0.01)**3/(2*np.pi**2)*total_halo_dust_bispectrum(0,test_tri,halo_data,stellar_info)**(1/2),(0.01)**3/(2*np.pi**2)*total_halo_bispectrum(0,test_tri,halo_data)**(1/2))
 
+#testing
+
 #print(I_03(test_tri,halo_data),I_03_dust(test_tri,halo_data,stellar_info),I_11(test_tri,halo_data,0),I_11_dust(test_tri,halo_data,stellar_info,0),I_12(test_tri,halo_data,0),I_12_dust(test_tri,halo_data,stellar_info,0),I_21(test_tri,halo_data,0),I_21_dust(test_tri,halo_data,stellar_info,0))
