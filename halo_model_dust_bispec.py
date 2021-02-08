@@ -1,4 +1,15 @@
 ##Replicate Stellar Mass vs Halo Mass curve from arXiv:1207.6105v2 Eq(3) and Intrinsic Parameters from Results section
+import sys
+import numpy as np
+from scipy import optimize
+import matplotlib.pyplot as plt
+import pandas as pd
+from math import e
+from scipy.interpolate import interp2d, interp1d,InterpolatedUnivariateSpline,RectBivariateSpline
+from perturb_matter_bispec import * 
+from CLASS_matter_powerspec import *
+from halo_model_bispec import *
+from global_variables import * 
 
 #Defining a class to define the Intrinsic Parameters that are functions of redshift
 class parameters_stellarMvshaloM(object):
@@ -74,7 +85,6 @@ def rho_bar_dust(z,stellarstuff):
 
 
 #Building the I-integrals that will be used to build the single, double, and triple halo bispectrum contributors but with dust density profiles for k3
-
 def I_03_dust(myTriangle,halo_stuff,stellarstuff):
 	I03dust = 0
 	#dn_dm[i] = halo_info(z,M_halo_min,M_halo_max,n_halo_integral_step).dn_dm_array
@@ -127,16 +137,16 @@ def I_11_dust(myTriangle,halo_stuff,stellarstuff,index):
 		#M_halo_mid = 1/2*(M_halo_i + (i+1)*delta_M_halo)
 		k1 = myTriangle.k1
 		profile_func = y_halo_parameter2(k1,M_halo_mid,halo_stuff,i)
-		prefactor = (M_halo_mid/rho_background_matter)
+		prefactor = (M_halo_mid/rho_background_matter) * halo_stuff.bias1_array[i]
 		if index==1:
 			k1 = myTriangle.k2
 			profile_func = y_halo_parameter2(k1,M_halo_mid,halo_stuff,i)
-			prefactor = (M_halo_mid/rho_background_matter)
+			prefactor = (M_halo_mid/rho_background_matter) * halo_stuff.bias1_array[i]
 		if index==2:
 			k1 = myTriangle.k3
 			profile_func = u_dust_halo_parameter(k1,M_halo_mid,stellarstuff)
 			prefactor = M_dust_optimistic(M_halo_mid,stellarstuff)
-		I11dust += prefactor * halo_stuff.dn_dm_array[i] * halo_stuff.bias1_array[i] * profile_func * delta_M_halo
+		I11dust += prefactor * halo_stuff.dn_dm_array[i] * profile_func * delta_M_halo
 		#transformI11dust += prefactor * halo_stuff.dn_dm_array[i] * (bias_1 - halo_stuff.bias1_array[i] * profile_func) * delta_M_halo
 		#print (I11)
 	#return(bias_1 - transformI11dust)
@@ -155,16 +165,16 @@ def I_21_dust(myTriangle,halo_stuff,stellarstuff,index):
 		#M_halo_mid = 1/2*(M_halo_i + (i+1)*delta_M_halo)
 		k1 = myTriangle.k1
 		profile_func = y_halo_parameter2(k1,M_halo_mid,halo_stuff,i)
-		prefactor = (M_halo_mid/rho_background_matter)
+		prefactor = (M_halo_mid/rho_background_matter) * halo_stuff.bias2_array[i]
 		if index==1:
 			k1 = myTriangle.k2
 			profile_func = y_halo_parameter2(k1,M_halo_mid,halo_stuff,i)
-			prefactor = (M_halo_mid/rho_background_matter)
+			prefactor = (M_halo_mid/rho_background_matter) * halo_stuff.bias2_array[i]
 		if index==2:
 			k1 = myTriangle.k3
 			profile_func = u_dust_halo_parameter(k1,M_halo_mid,stellarstuff)
 			prefactor = M_dust_optimistic(M_halo_mid,stellarstuff)
-		I21dust += prefactor * halo_stuff.dn_dm_array[i] * halo_stuff.bias2_array[i] * profile_func * delta_M_halo
+		I21dust += prefactor * halo_stuff.dn_dm_array[i] * profile_func * delta_M_halo
 		#print (I21)
 	#return(bias_2 - transformI21dust)
 	return(I21dust)
