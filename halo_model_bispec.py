@@ -1,6 +1,17 @@
 ##Building Halo Model Matter Bispectrum from arXiv:astro-ph/0001493v1 and APJ 548:7-18, 2001 February 10
+import sys
+import numpy as np
+from scipy import optimize
+import matplotlib.pyplot as plt
+import pandas as pd
+from math import e
+from scipy.interpolate import interp2d, interp1d,InterpolatedUnivariateSpline,RectBivariateSpline
+from perturb_matter_bispec import *
+from CLASS_matter_powerspec import *
+from global_variables import * 
 #Input paramters
-n_M = 124
+n_M = 124 #number of mass bins
+n_z = 31 #number of redshift values
 critical_density_parameter = 1.68 #value of a spherical overdensity at which it collapses for Einstein de-Sitter Model
 rho_background_matter = Omega_m * rho_critial #background density of matter
 alpha = -1 # NFW Halo Profile
@@ -8,19 +19,6 @@ alpha = -1 # NFW Halo Profile
 #computing lagrangian radius from input parameters
 def r_halo_lagrangian(M):
 	return((3*M/(4*np.pi*rho_background_matter))**(1/3))
-
-#defining sigma_8 function
-def sigma(z,kstart,kend,R,n): #Sigma cosmological function of redshift, z
-	Ai = 0
-	for i in range (n):
-		delta_k = (kend-kstart)/n
-		#k_i = (kstart + i*delta_k)
-		#thetamid = 1/2*(theta_i + starttheta + (i+1)*delta_theta)
-		kmid = kstart + (2*i + 1)/2 * delta_k
-		Ai += kmid**2*PSetLin.P_interp(z,kmid)[:,0]*window(kmid,R)**2
-		#if i<1000:
-			#print('{:4d} {:11.5e} {:11.5e} {:11.5e} {:11.5e}'.format(i,kmid,PSetLin.P_interp(z,kmid)[0,0],window(kmid),Ai))
-	return np.sqrt(Ai/(2*np.pi**2)*delta_k)
 
 #building rms fluctuation within a top-hat filter at the virial radius corresponding to mass M
 #empty array that has rows of mass entries from M_halo_array and columns of z entries from PSetLin.z_array
@@ -64,7 +62,6 @@ def rho_characteristic(z,M,M_crit):
 #density profile for general dark matter profiles
 def rho_halo(r,z,M,M_crit):
 	return(rho_characteristic(z,M,M_crit)/((r/r_characteristic(z,M,M_crit))**(-alpha)*(1 + r/r_characteristic(z,M,M_crit))**(3 + alpha)))
-
 
 #mass function
 a_halo = 0.707
@@ -129,6 +126,14 @@ def bias_parameter_2(z,M):
 	b2_L = 4*nu_halo**2/critical_density_parameter**2*((p_halo**2 + nu_halo*a_halo*p_halo)/(nu_halo**2*(1+(a_halo*nu_halo)**p_halo)) + ((a_halo*nu_halo)**2 - 2*a_halo*nu_halo - 1)/(4*nu_halo**2)) + 2*nu_halo/critical_density_parameter**2*((1 - a_halo*nu_halo)/(2*nu_halo) - p_halo/(nu_halo*(1+(a_halo*nu_halo)**p_halo)))
 	return(8/21* b1_L + b2_L)
 
+#Defining analytic F_2 function
+def analy_F(myTriangle,i):
+	k1 = myTriangle.k1; k2 = myTriangle.k2; cos12 = myTriangle.cos12
+	if i==1:
+		k1 = myTriangle.k2; k2 = myTriangle.k3; cos12 = myTriangle.cos23
+	if i==2:
+		k1 = myTriangle.k3; k2 = myTriangle.k1; cos12 = myTriangle.cos13
+	return(5/7+1/2*cos12*(k1/k2+k2/k1)+2/7*cos12**2)
 
 #defining integrals in Eq(5) of https://iopscience.iop.org/article/10.1086/318660/fulltext/
 n_halo_integral_step = 10000
@@ -379,8 +384,6 @@ def integrand_I_21(myTriangle,halo_stuff,i):
 #		I21 += (M_halo_mid/rho_background_matter) * halo_stuff.dn_dm_array[i] * halo_stuff.bias2_array[i] * y_halo_parameter2(k1,M_halo_mid,halo_stuff,i) * delta_M_halo
 #		#print (I21)
 #	return(I21)
-
-
 
 #defining single, double, and triple halo contribution to halo model bispectrum as formulated in https://iopscience.iop.org/article/10.1086/318660/fulltext/
 
