@@ -1,4 +1,13 @@
 ##Perturbative Matter Bispectrum. Defining the functions from arXiv:astro-ph/9709112 Eq. 26-31
+import sys
+import numpy as np
+from scipy import optimize
+import matplotlib.pyplot as plt
+import pandas as pd
+from math import e
+from scipy.interpolate import interp2d, interp1d,InterpolatedUnivariateSpline,RectBivariateSpline
+from global_variables import * 
+from CLASS_matter_powerspec import *
 
 def s_transfer(Omega_b):
 	return(44.5*np.log(9.83/(Omega_0*h_cosmo**2))/(1 + 10*(Omega_b*h_cosmo**2)**0.75)**0.5)
