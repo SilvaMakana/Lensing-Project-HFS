@@ -1,4 +1,12 @@
 ##Building Power Spectra from CLASS data output
+import sys
+import numpy as np
+from scipy import optimize
+import matplotlib.pyplot as plt
+import pandas as pd
+from math import e
+from scipy.interpolate import interp2d, interp1d,InterpolatedUnivariateSpline,RectBivariateSpline
+from global_variables import * 
 class PowerSpectrumSingleZ(object):
 	"""class to store a power spectrum at a single redshift, loaded from an input file, with input k range"""
 	def __init__(self,filename,log_k_array):
@@ -84,3 +92,6 @@ dir_base = "/Users/makanas/class_public-2.8.2/output/LENSING_PROJECT/"
 name_base = dir_base+"LENSING_PROJECT06_z"
 name_endNL = "_pk_nl.dat"
 name_endLin = "_pk.dat"
+
+PSetNL = PowerSpectrumMultiZ(name_base,name_endNL,n_z,k_min,k_max,n_k)
+PSetLin = PowerSpectrumMultiZ(name_base,name_endLin,n_z,k_min,k_max,n_k)
