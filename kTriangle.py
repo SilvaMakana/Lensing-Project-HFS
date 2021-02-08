@@ -1,4 +1,12 @@
 ##Building a momentum (k) triangle that only allows for closed k-space configurations in bispectrum
+import sys
+import numpy as np
+from scipy import optimize
+import matplotlib.pyplot as plt
+import pandas as pd
+from math import e
+from scipy.interpolate import interp2d, interp1d,InterpolatedUnivariateSpline,RectBivariateSpline
+from global_variables import * 
 class kTriangle(object):
 	def __init__(self,in1,in2,in3,input="SAS"):
 		"""if using SAS, then, in1=length of k1, in2=length of k2, in3 = angle in radians between k1 and k2"""
