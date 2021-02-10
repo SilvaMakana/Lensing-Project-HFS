@@ -137,16 +137,16 @@ def I_11_dust(myTriangle,halo_stuff,stellarstuff,index):
 		#M_halo_mid = 1/2*(M_halo_i + (i+1)*delta_M_halo)
 		k1 = myTriangle.k1
 		profile_func = y_halo_parameter2(k1,M_halo_mid,halo_stuff,i)
-		prefactor = (M_halo_mid/rho_background_matter) * halo_stuff.bias1_array[i]
+		prefactor = (M_halo_mid/rho_background_matter)
 		if index==1:
 			k1 = myTriangle.k2
 			profile_func = y_halo_parameter2(k1,M_halo_mid,halo_stuff,i)
-			prefactor = (M_halo_mid/rho_background_matter) * halo_stuff.bias1_array[i]
+			prefactor = (M_halo_mid/rho_background_matter) 
 		if index==2:
 			k1 = myTriangle.k3
 			profile_func = u_dust_halo_parameter(k1,M_halo_mid,stellarstuff)
 			prefactor = M_dust_optimistic(M_halo_mid,stellarstuff)
-		I11dust += prefactor * halo_stuff.dn_dm_array[i] * profile_func * delta_M_halo
+		I11dust += prefactor * halo_stuff.dn_dm_array[i] * halo_stuff.bias1_array[i] * profile_func * delta_M_halo
 		#transformI11dust += prefactor * halo_stuff.dn_dm_array[i] * (bias_1 - halo_stuff.bias1_array[i] * profile_func) * delta_M_halo
 		#print (I11)
 	#return(bias_1 - transformI11dust)
@@ -165,16 +165,16 @@ def I_21_dust(myTriangle,halo_stuff,stellarstuff,index):
 		#M_halo_mid = 1/2*(M_halo_i + (i+1)*delta_M_halo)
 		k1 = myTriangle.k1
 		profile_func = y_halo_parameter2(k1,M_halo_mid,halo_stuff,i)
-		prefactor = (M_halo_mid/rho_background_matter) * halo_stuff.bias2_array[i]
+		prefactor = (M_halo_mid/rho_background_matter) 
 		if index==1:
 			k1 = myTriangle.k2
 			profile_func = y_halo_parameter2(k1,M_halo_mid,halo_stuff,i)
-			prefactor = (M_halo_mid/rho_background_matter) * halo_stuff.bias2_array[i]
+			prefactor = (M_halo_mid/rho_background_matter)
 		if index==2:
 			k1 = myTriangle.k3
 			profile_func = u_dust_halo_parameter(k1,M_halo_mid,stellarstuff)
 			prefactor = M_dust_optimistic(M_halo_mid,stellarstuff)
-		I21dust += prefactor * halo_stuff.dn_dm_array[i] * profile_func * delta_M_halo
+		I21dust += prefactor * halo_stuff.dn_dm_array[i] * halo_stuff.bias2_array[i] * profile_func * delta_M_halo
 		#print (I21)
 	#return(bias_2 - transformI21dust)
 	return(I21dust)
