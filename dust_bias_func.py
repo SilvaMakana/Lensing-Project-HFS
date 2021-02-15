@@ -57,14 +57,23 @@ def n_halo_distribution(z,M_max):
 	return(n_halo_dist)
 
 
-#Definition of the two halo amplitude
+#Definition of the two halo amplitude, DOES NOT WORK USING PYTHON FUNCTIONS TO EXECUTE INTEGRALS
+#def two_halo_term_amplitude_def(z,M_halo_max,dust_model):
+#	amplitude_def = 0
+#	delta_M = (M_halo_max)/n
+#	M_mid = np.linspace(0.5*delta_M,(n-1/2)*delta_M,n)
+#	amplitude_def = K_ext_V * np.sum(bias_parameter_1(z,M_mid) * n_halo_distribution(z,M_mid) * dust_model.dust_model_1(z,M_mid)) * (1+z)**(2) * delta_M
+#	return(amplitude_def)
+
+#Definition of the two halo amplitude, WORKS USING FOR LOOPS
 def two_halo_term_amplitude_def(z,M_halo_max,dust_model):
 	amplitude_def = 0
 	delta_M = (M_halo_max)/n
-	M_mid = np.linspace(0.5*delta_M,(n-1/2)*delta_M,n)
-	amplitude_def = K_ext_V * np.sum(bias_parameter_1(z,M_mid) * n_halo_distribution(z,M_mid) * dust_model.dust_model_1(z,M_mid)) * (1+z)**(2) * delta_M
-	return(amplitude_def)
-
+	for i in range(n):
+		M_i = i*delta_M
+		M_mid = 1/2*(M_i + (i+1)*delta_M)
+		amplitude_def += bias_parameter_1(z,M_mid) * n_halo_distribution(z,M_mid) * dust_model.dust_model_1(z,M_mid) * (1+z)**(2) * delta_M
+	return(K_ext_V * amplitude_def)
 
 
 
