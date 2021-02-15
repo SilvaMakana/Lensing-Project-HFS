@@ -15,6 +15,7 @@ from infer_dust_mass import *
 from kTriangle import *
 from perturb_matter_bispec import *
 from reduced_shear_powerspec1 import *
+from dust_bias_func import *
 from global_variables import * 
 
 #Plotting Nonlinear and Linear Power Spectrum
@@ -59,4 +60,18 @@ from global_variables import *
 
 #Calulating reduced shear power Spectrum
 #print(window_distance(1,2),window_distance(2,1))
-print(reduced_shear(0,10000,1,1,10,0))
+#print(reduced_shear(0,10000,1,1,10,0))
+
+#Calculating extinction measurement
+#print(extinction_measurement(1))
+
+#Calculating bias parameter amplitude from 2-halo term
+#print(two_halo_term_amplitude(0,1,100000))
+
+#Testing if the class in dust_bias_func.py is working
+dustmodel = dust_mass_model(0,1)
+#stellar_info = stellar_info = parameters_stellarMvshaloM(0)
+#print(dustmodel.dust_model_test(1,2))
+#print(dustmodel.dust_model_1(0,10**12),M_dust_optimistic(10**12,stellar_info)/2)
+#print(n_halo_distribution(0,10**14))
+print(two_halo_term_amplitude_def(1,10**14,dustmodel)) ##NOT WORKING
