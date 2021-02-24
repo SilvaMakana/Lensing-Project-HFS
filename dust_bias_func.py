@@ -21,7 +21,7 @@ K_ext_V = 3.21689961*10**(-12) / h_cosmo # dust opacity  in units of (Mpc*h^-1)^
 def extinction_measurement(r_perp):
 	return(4.14*10**(-3) * 0.1**(0.84) * (r_perp)**(-0.84))
 
-#Amplitude of the two halo term from measurement profile, FIX BESSEL FUNCTIONS, IT SHOULD BE REGULAR BESSEL NOT SPHERICAL
+#Amplitude of the two halo term from measurement profile, this function has units 1/(h^-1 * cMpc)
 def two_halo_term_amplitude_measurement(z_ini,r_perp,k_max):
 	#galaxy bias parameter, REPLACE WITH THE FACT THAT THE SIMPLEST CASE IS THAT THE GALAXY IS BIASED THE SAME AS THE HALO BIAS
 	Menard_halo_mass = 4.1 * 10**11
@@ -63,14 +63,27 @@ def two_halo_term_amplitude_measurement(z_ini,r_perp,k_max):
 #	return(amplitude_def)
 
 
-def alpha_parameter(stellarstuff,parameter_cutoff):
-	Menard_halo_mass = 4.1 * 10**11 
-	Menard_dust_value = 4.109 * 10**7 #mass of dust in a halo with halo mass Menard_halo_mass
-	return(np.log(M_dust_optimistic(Menard_halo_mass,stellarstuff)/Menard_dust_value - 1)/np.log(Menard_halo_mass/parameter_cutoff))
+#Parameter from guessed model defined in terms of the other parameter, this is solved using the Menard
+#measured value of the dust at the particular halo mass
+#def alpha_parameter(stellarstuff,parameter_cutoff):
+#	Menard_halo_mass = 4.1 * 10**11 #mass of halo in the Menard measurement of the dust in h^-1 M_solar
+#	Menard_dust_value = 4.109 * 10**7 #mass of dust in a halo with halo mass Menard_halo_mass
+#	return(np.log(M_dust_optimistic(Menard_halo_mass,stellarstuff)/Menard_dust_value - 1)/np.log(Menard_halo_mass/parameter_cutoff))
 
+def alpha_parameter(stellarstuff,parameter_cutoff):
+	Menard_halo_mass = 4.1 * 10**11 #mass of halo in the Menard measurement of the dust in h^-1 M_solar
+	Menard_dust_value = 4.109 * 10**7 #mass of dust in a halo with halo mass Menard_halo_mass
+	return(np.exp(Menard_halo_mass/parameter_cutoff + np.log(Menard_dust_value/M_dust_optimistic(Menard_halo_mass,stellarstuff))))
+
+#First model of the dust mass as a function of halo masses, redshift, and some parameters
+#def dust_model_1(z,M_halo,parameter_cutoff):
+#	stellar_info = parameters_stellarMvshaloM(z)
+#	return(M_dust_optimistic(M_halo,stellar_info)/(1 + (M_halo/parameter_cutoff)**(alpha_parameter(stellar_info,parameter_cutoff))))
+
+#First model of the dust mass as a function of halo masses, redshift, and some parameters
 def dust_model_1(z,M_halo,parameter_cutoff):
 	stellar_info = parameters_stellarMvshaloM(z)
-	return(M_dust_optimistic(M_halo,stellar_info)/(1 + (M_halo/parameter_cutoff)**(alpha_parameter(stellar_info,parameter_cutoff))))
+	return(alpha_parameter(stellar_info,parameter_cutoff) * M_dust_optimistic(M_halo,stellar_info) *np.exp(M_halo/parameter_cutoff))
 
 #Definition of the two halo amplitude, WORKS USING FOR LOOPS, log space for mass integration
 def two_halo_term_amplitude_def(z,M_halo_max,parameter_cutoff):
@@ -82,6 +95,7 @@ def two_halo_term_amplitude_def(z,M_halo_max,parameter_cutoff):
 		amplitude_def += bias_parameter_1(z,M_mid) * halo_distribution_function(z,M_mid) * dust_model_1(z,M_mid,parameter_cutoff) * (1+z)**(2) * delta_M
 	return(K_ext_V * amplitude_def)
 
+#Root solver to find what parameter_cutoff is neededd
 def find_parameter_cutoff(z):
 	something = optimize.root_scalar(lambda parameter_cutoff: (two_halo_term_amplitude_measurement(z,0.177,1000) - two_halo_term_amplitude_def(z,10**20,parameter_cutoff)),bracket=[10**(-4),10**15],method ='brentq')
 	return something.root
