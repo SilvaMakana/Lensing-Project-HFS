@@ -25,9 +25,11 @@ def r_halo_lagrangian(M):
 sigma_halo_array = np.zeros((n_z,n_M))
 
 #halo mass array from 10**-4 M_S to 10**16 M_S
-M_halo_min = 10**(-4)
-M_halo_max = 10**16
-M_halo_array = np.logspace(-4,16,n_M)
+M_halo_min = 10**(10)
+M_halo_max = 10**15
+M_halo_array = np.logspace(10,15,n_M)
+
+#zarray,Marray = np.meshgrid(PSetLin.z_array,M_halo_array)
 
 #for loop to fill in the rows of sigma_halo_array
 for i in range(n_M):
@@ -35,6 +37,7 @@ for i in range(n_M):
 
 #Interpolated function for sigma of z and M
 sigma_halo_interp = RectBivariateSpline(PSetLin.z_array,M_halo_array,sigma_halo_array,kx=3,ky=3)
+#sigma_halo_interp = RectBivariateSpline(zarray,Marray,sigma_halo_array,kx=3,ky=3)
 
 #defining mass scale for when nu_halo(M_scale) = 1
 def scale_M_critical(z,M):
@@ -75,6 +78,7 @@ def f_halo_mass(z,M):
 #defining the derivative of nu_halo w.r.t to M (mass)
 def dnu_dM(z,M):
 	sigma_again = RectBivariateSpline(PSetLin.z_array,M_halo_array,sigma_halo_array,kx=3,ky=3)
+	#sigma_again = RectBivariateSpline(zarray,Marray,sigma_halo_array,kx=3,ky=3)
 	#anti_dnu_dM = (critical_density_parameter / sigma_again)**2
 	return(-2*critical_density_parameter**2/sigma_again(z,M)**3 * sigma_again(z,M,dy=1))
 #dark matter distribution function
