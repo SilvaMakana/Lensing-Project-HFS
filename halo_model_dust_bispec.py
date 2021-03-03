@@ -50,6 +50,7 @@ def M_halo_from_M_stellar(M_stellar,stellarstuff):
 def M_dust_optimistic(M_halo,stellarstuff):
 	return(0.015*10**(logM_stellar(M_halo,stellarstuff)))
 
+#Define alpha_parameter as a number
 def alpha_parameter(stellarstuff,parameter_cutoff):
 	Menard_halo_mass = 4.1 * 10**11 #mass of halo in the Menard measurement of the dust in h^-1 M_solar
 	Menard_dust_value = 4.109 * 10**7 #mass of dust in a halo with halo mass Menard_halo_mass
@@ -83,7 +84,7 @@ def u_dust_halo_parameter(z,k,M):
 	dust_parameter = np.sum(r_dust_mid**2 * np.sin(k*r_dust_mid)/(k*r_dust_mid) * rho_dust(z,r_dust_mid,M)) * delta_r_dust
 	return(1/dust_model_1(z,M,11829265763208.602) * 4*np.pi * dust_parameter)
 
-#background dust density
+
 #def rho_bar_dust(z):
 #	rhobardust = 0
 #	delta_M_halo = M_halo_max/n
@@ -91,12 +92,14 @@ def u_dust_halo_parameter(z,k,M):
 #	rhobardust = np.sum(dust_model_1(z,M_halo_mid,11829265763208.602) * halo_distribution_function(z,M_halo_mid)) * delta_M_halo
 #	return(rhobardust)
 
+#background dust density
 def rho_bar_dust(z):
 	rhobardust = 0
 	epsilon = (M_halo_max/M_halo_min)**(1/n_halo_integral_step) - 1
-	delta_M_halo = M_halo_min* (M_halo_max/M_halo_min)**(i/n_halo_integral_step)*epsilon
-	M_halo_mid = M_halo_min * (M_halo_max/M_halo_min)**(i/n_halo_integral_step) * (1 + epsilon/2)
-	rhobardust = np.sum(dust_model_1(z,M_halo_mid,11829265763208.602) * halo_distribution_function(z,M_halo_mid)) * delta_M_halo
+	delta_M_halo = M_halo_min * (M_halo_max/M_halo_min)**(np.linspace(0,n_halo_integral_step-1,n_halo_integral_step)/n_halo_integral_step)*epsilon
+	M_halo_mid = M_halo_min * (M_halo_max/M_halo_min)**(np.linspace(0,n_halo_integral_step-1,n_halo_integral_step)/n_halo_integral_step) * (1 + epsilon/2)
+	#M_halo_mid = np.linspace(0,n_halo_integration_step-1,n_halo_integration_step)
+	rhobardust = np.sum(dust_model_1(z,M_halo_mid,11829265763208.602) * halo_distribution_function(z,M_halo_mid) * delta_M_halo)
 	return(rhobardust)
 
 #Building the I-integrals that will be used to build the single, double, and triple halo bispectrum contributors but with dust density profiles for k3
@@ -117,8 +120,8 @@ def I_12_dust(z,myTriangle,halo_stuff,index):
 	I12dust = 0
 	for i in range(n_halo_integral_step):
 		epsilon = (M_halo_max/M_halo_min)**(1/n_halo_integral_step) - 1
-		delta_M_halo = M_halo_min* (M_halo_max/M_halo_min)**(i/n_halo_integral_step)*epsilon
-		M_halo_mid = M_halo_min * (M_halo_max/M_halo_min)**(i/n_halo_integral_step) * (1 + epsilon/2)
+		delta_M_halo = M_halo_min* (M_halo_max/M_halo_min)**(np.linspace(0,n_halo_integral_step-1,n_halo_integral_step)/n_halo_integral_step)*epsilon
+		M_halo_mid = M_halo_min * (M_halo_max/M_halo_min)**(np.linspace(0,n_halo_integral_step-1,n_halo_integral_step)/n_halo_integral_step) * (1 + epsilon/2)
 		#delta_M_halo = (10**16 - 10**8)/n_halo_integral_step
 		#M_halo_i = delta_M_halo*i
 		#M_halo_mid = 1/2*(M_halo_i + (i+1)*delta_M_halo)
@@ -135,7 +138,7 @@ def I_12_dust(z,myTriangle,halo_stuff,index):
 			k1 = myTriangle.k3; k2 = myTriangle.k1
 			profile_func1 = (dust_model_1(z,M_halo_mid,11829265763208.602))*u_dust_halo_parameter(z,k1,M_halo_mid)
 			profile_func2 = (M_halo_mid/rho_background_matter)*y_halo_parameter2(k2,M_halo_mid,halo_stuff,i)
-		I12dust += halo_stuff.dn_dm_array[i] * halo_stuff.bias1_array[i] * profile_func1 * profile_func2 * delta_M_halo
+		I12dust = np.sum(halo_stuff.dn_dm_array[i] * halo_stuff.bias1_array[i] * profile_func1 * profile_func2 * delta_M_halo)
 		#print (I12)
 	return(I12dust)
 
