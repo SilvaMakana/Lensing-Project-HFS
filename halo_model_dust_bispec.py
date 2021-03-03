@@ -84,13 +84,20 @@ def u_dust_halo_parameter(z,k,M):
 	return(1/dust_model_1(z,M,11829265763208.602) * 4*np.pi * dust_parameter)
 
 #background dust density
+#def rho_bar_dust(z):
+#	rhobardust = 0
+#	delta_M_halo = M_halo_max/n
+#	M_halo_mid = np.linspace(0.5*delta_M_halo,(n-1/2)*delta_M_halo,n)
+#	rhobardust = np.sum(dust_model_1(z,M_halo_mid,11829265763208.602) * halo_distribution_function(z,M_halo_mid)) * delta_M_halo
+#	return(rhobardust)
+
 def rho_bar_dust(z):
 	rhobardust = 0
-	delta_M_halo = M_halo_max/n
-	M_halo_mid = np.linspace(0.5*delta_M_halo,(n-1/2)*delta_M_halo,n)
+	epsilon = (M_halo_max/M_halo_min)**(1/n_halo_integral_step) - 1
+	delta_M_halo = M_halo_min* (M_halo_max/M_halo_min)**(i/n_halo_integral_step)*epsilon
+	M_halo_mid = M_halo_min * (M_halo_max/M_halo_min)**(i/n_halo_integral_step) * (1 + epsilon/2)
 	rhobardust = np.sum(dust_model_1(z,M_halo_mid,11829265763208.602) * halo_distribution_function(z,M_halo_mid)) * delta_M_halo
 	return(rhobardust)
-
 
 #Building the I-integrals that will be used to build the single, double, and triple halo bispectrum contributors but with dust density profiles for k3
 def I_03_dust(z,myTriangle,halo_stuff):
