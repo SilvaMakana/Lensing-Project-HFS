@@ -132,7 +132,7 @@ def I_12_dust(z,myTriangle,halo_stuff,index):
 	spacing2 = spacing1.astype(int)
 	#print(np.shape(halo_stuff.dn_dm_array[i],halo_stuff.bias1_array[i],delta_M_halo,M_halo_mid,y_halo_parameter2(k1,M_halo_mid,halo_stuff,i)))
 	profile_func1 = (M_halo_mid/rho_background_matter) * y_halo_parameter2(k1,M_halo_mid,halo_stuff,spacing2).T
-	profile_func2 = (M_halo_mid/rho_background_matter)*y_halo_parameter2(k2,M_halo_mid,halo_stuff,spacing2)
+	profile_func2 = (M_halo_mid/rho_background_matter) * y_halo_parameter2(k2,M_halo_mid,halo_stuff,spacing2)
 	if index==1:
 		k1 = myTriangle.k2; k2 = myTriangle.k3
 		profile_func1 = (M_halo_mid/rho_background_matter)*y_halo_parameter2(k1,M_halo_mid,halo_stuff,spacing2)
