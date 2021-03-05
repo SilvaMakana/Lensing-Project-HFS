@@ -108,7 +108,7 @@ def y_halo_parameter2(k,M,halo_stuff,g):
 	y_halo = 0
 	delta_r_halo = r_halo_virial(M)/n
 	r_halo_mid = np.linspace(0.5*delta_r_halo,(n-1/2)*delta_r_halo,n)
-	y_halo = np.sum(r_halo_mid**2 * halo_stuff.rho_halo_array[g,:] * np.sin(k*r_halo_mid)/(k*r_halo_mid)) * delta_r_halo
+	y_halo = np.sum(r_halo_mid**2 * halo_stuff.rho_halo_array[g,:].T * np.sin(k*r_halo_mid)/(k*r_halo_mid),axis=0) * delta_r_halo
 	return(1/M * 4 * np.pi * y_halo)
 
 
@@ -140,7 +140,7 @@ def analy_F(myTriangle,i):
 	return(5/7+1/2*cos12*(k1/k2+k2/k1)+2/7*cos12**2)
 
 #defining integrals in Eq(5) of https://iopscience.iop.org/article/10.1086/318660/fulltext/
-n_halo_integral_step = 10000
+n_halo_integral_step = 1000
 
 #defining a class to store halo_distribution_function(z,M) and bias_parameter_1(z,M) and bias_parameter_2(z,M)
 class halo_info(object):
