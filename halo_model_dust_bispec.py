@@ -315,6 +315,6 @@ def triple_halo_dust_bispectrum(z,myTriangle,halo_stuff):
 	return((2*analy_F(myTriangle,0)*I_11_dust(z,myTriangle,halo_stuff,2) + I_21_dust(z,myTriangle,halo_stuff,2)) * I_11_dust(z,myTriangle,halo_stuff,0)*I_11_dust(z,myTriangle,halo_stuff,1)*PSetLin.P_interp(z,myTriangle.k1)*PSetLin.P_interp(z,myTriangle.k2) + (2*analy_F(myTriangle,2)*I_11_dust(z,myTriangle,halo_stuff,1) + I_21_dust(z,myTriangle,halo_stuff,1)) * I_11_dust(z,myTriangle,halo_stuff,2)*I_11_dust(z,myTriangle,halo_stuff,0)*PSetLin.P_interp(z,myTriangle.k3)*PSetLin.P_interp(z,myTriangle.k1) + (2*analy_F(myTriangle,1)*I_11_dust(z,myTriangle,halo_stuff,0) + I_21_dust(z,myTriangle,halo_stuff,0)) * I_11_dust(z,myTriangle,halo_stuff,1)*I_11_dust(z,myTriangle,halo_stuff,2)*PSetLin.P_interp(z,myTriangle.k2)*PSetLin.P_interp(z,myTriangle.k3))
 
 #total halo dust bispectrum
-def total_halo_dust_bispectrum(z,myTriangle):
-	halo_stuff = halo_info(z,M_halo_min,M_halo_max,n_halo_integral_step)
+def total_halo_dust_bispectrum(z,myTriangle,halo_stuff):
+	#halo_stuff = halo_info(z,M_halo_min,M_halo_max,n_halo_integral_step)
 	return((I_03_dust(z,myTriangle,halo_stuff) + double_halo_dust_bispectrum(z,myTriangle,halo_stuff) + triple_halo_dust_bispectrum(z,myTriangle,halo_stuff))/rho_bar_dust(z))
