@@ -44,5 +44,5 @@ def reduced_shear1(z_ini,l_tripleprime_max,z_alpha,z_beta,l_mag,l_phi):
 				phi_k = k*delta_phi
 				phi_mid = 1/2*(phi_k + (k+1)*delta_phi)
 				shear += factor * np.cos(2*l_phi - 2*phi_mid)  * total_halo_dust_bispectrum(zmid,kTriangle(l_mag/D_mid,l_tripleprime_mid/D_mid,l_phi - phi_mid),halo_data)[0,0] * 1/(2*np.pi)**2 * delta_z * delta_phi * l_tripleprime_mid * delta_l_tripleprime
-				print(i,j,k,shear)
+		print(i,shear)
 	return (shear)
