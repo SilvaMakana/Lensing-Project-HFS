@@ -5,6 +5,7 @@ from scipy import optimize
 import matplotlib.pyplot as plt
 import pandas as pd
 from math import e
+from mpmath import *
 from scipy.interpolate import interp2d, interp1d,InterpolatedUnivariateSpline,RectBivariateSpline
 from perturb_matter_bispec import * 
 from CLASS_matter_powerspec import *
@@ -65,12 +66,13 @@ def dust_model_1(z,M_halo):
 	return(alpha * M_dust_optimistic(M_halo,stellar_info) * np.exp(-M_halo/cut_off_value))
 
 #Normalization constant that is defined by the dust mass model in dust_bias_func in a halo of mass M_halo
+"""Write normalization_rho as an analytic function"""
 def normalization_rho(z,M_halo):
-	r_integral = 0
-	delta_r_halo = r_halo_virial(M_halo)/n
-	r_halo_mid = np.linspace(0.5*delta_r_halo,(n-1/2)*delta_r_halo,n)
-	r_integral = np.sum((r_halo_mid)**(-1.84) * r_halo_mid**2,axis=0) * delta_r_halo
-	return(dust_model_1(z,M_halo)/(4*np.pi * r_integral))
+	#r_integral = 0
+	#delta_r_halo = r_halo_virial(M_halo)/n
+	#r_halo_mid = np.linspace(0.5*delta_r_halo,(n-1/2)*delta_r_halo,n)
+	#r_integral = np.sum((r_halo_mid)**(-1.84) * r_halo_mid**2,axis=0) * delta_r_halo
+	return(dust_model_1(z,M_halo) * 1.16/(4*np.pi * r_halo_virial(M_halo)**(1.16)))
 
 #Dust density as a function of M_halo and size of the halo (r_halo)
 def rho_dust(z,r_halo,M_halo):
@@ -81,13 +83,17 @@ def rho_dust(z,r_halo,M_halo):
 ##this means that any functions of k3 that depend on density will be the dust density function, the other k-legs of the triangle will be y_halo_parameter
 
 #dimensionaless Fourier Transform of dust density, similar to y_halo_parameter
-def u_dust_halo_parameter(z,k,M):
+"""def u_dust_halo_parameter(z,k,M):
 	dust_parameter = 0
 	delta_r_dust = r_halo_virial(M)/n
 	r_dust_mid = np.linspace(0.5*delta_r_dust,(n-1/2)*delta_r_dust,n)
-	dust_parameter = np.sum(r_dust_mid**2 * np.sin(k*r_dust_mid)/(k*r_dust_mid) * rho_dust(z,r_dust_mid,M),axis=0) * delta_r_dust
-	return(1/dust_model_1(z,M) * 4*np.pi * dust_parameter)
+	dust_parameter = np.sum(r_dust_mid * np.sin(k*r_dust_mid) * rho_dust(z,r_dust_mid,M),axis=0)/k * delta_r_dust
+	return(1/dust_model_1(z,M) * 4*np.pi * dust_parameter)"""
 
+#Analytic Version of u_dust_halo_parameter(z,k,M) using 1F2 function
+def u_dust_halo_parameter(z,k,M):
+	np_1f2 = np.frompyfunc(hyp1f2,4,1)
+	return(1/dust_model_1(z,M) * 4*np.pi * 0.862069 * normalization_rho(z,M) * r_halo_virial(M)**(1.16) * np_1f2(0.58,1.5,1.58,-1/4 * (k * r_halo_virial(M))**2))
 
 #def rho_bar_dust(z):
 #	rhobardust = 0
@@ -138,18 +144,19 @@ def I_03_dust(z,myTriangle,halo_stuff):
 #Vector version
 def I_12_dust(z,myTriangle,halo_stuff,index):
 	I12dust = 0
+	spacing1 = np.linspace(0,n_halo_integral_step-1,n_halo_integral_step)
+	spacing2 = spacing1.astype(int)
 	epsilon = (M_halo_max/M_halo_min)**(1/n_halo_integral_step) - 1
 	delta_M_halo = M_halo_min* (M_halo_max/M_halo_min)**(np.linspace(0,n_halo_integral_step-1,n_halo_integral_step)/n_halo_integral_step)*epsilon
 	M_halo_mid = M_halo_min * (M_halo_max/M_halo_min)**(np.linspace(0,n_halo_integral_step-1,n_halo_integral_step)/n_halo_integral_step) * (1 + epsilon/2)
 	#delta_M_halo = (10**16 - 10**8)/n_halo_integral_step
 	#M_halo_i = delta_M_halo*i
 	#M_halo_mid = 1/2*(M_halo_i + (i+1)*delta_M_halo)
-	k1 = myTriangle.k1; k2 = myTriangle.k2
-	spacing1 = np.linspace(0,n_halo_integral_step-1,n_halo_integral_step)
-	spacing2 = spacing1.astype(int)
-	#print(np.shape(halo_stuff.dn_dm_array[i],halo_stuff.bias1_array[i],delta_M_halo,M_halo_mid,y_halo_parameter2(k1,M_halo_mid,halo_stuff,i)))
-	profile_func1 = (M_halo_mid/rho_background_matter) * y_halo_parameter2(k1,M_halo_mid,halo_stuff,spacing2)
-	profile_func2 = (M_halo_mid/rho_background_matter) * y_halo_parameter2(k2,M_halo_mid,halo_stuff,spacing2)
+	if index==0:
+		k1 = myTriangle.k1; k2 = myTriangle.k2
+		#print(np.shape(halo_stuff.dn_dm_array[i],halo_stuff.bias1_array[i],delta_M_halo,M_halo_mid,y_halo_parameter2(k1,M_halo_mid,halo_stuff,i)))
+		profile_func1 = (M_halo_mid/rho_background_matter) * y_halo_parameter2(k1,M_halo_mid,halo_stuff,spacing2)
+		profile_func2 = (M_halo_mid/rho_background_matter) * y_halo_parameter2(k2,M_halo_mid,halo_stuff,spacing2)
 	if index==1:
 		k1 = myTriangle.k2; k2 = myTriangle.k3
 		profile_func1 = (M_halo_mid/rho_background_matter)*y_halo_parameter2(k1,M_halo_mid,halo_stuff,spacing2)
@@ -203,18 +210,19 @@ def I_11_dust(z,myTriangle,halo_stuff,index):
 		#delta_M_halo = (10**16 - 10**8)/n_halo_integral_step
 		#M_halo_i = delta_M_halo*i
 		#M_halo_mid = 1/2*(M_halo_i + (i+1)*delta_M_halo)
-	k1 = myTriangle.k1
-	profile_func = y_halo_parameter2(k1,M_halo_mid,halo_stuff,spacing2)
-	prefactor = (M_halo_mid/rho_background_matter)
+	if index==0:
+		k1 = myTriangle.k1
+		profile_func = (M_halo_mid/rho_background_matter) * y_halo_parameter2(k1,M_halo_mid,halo_stuff,spacing2)
+		#prefactor = (M_halo_mid/rho_background_matter)
 	if index==1:
 		k1 = myTriangle.k2
-		profile_func = y_halo_parameter2(k1,M_halo_mid,halo_stuff,spacing2)
-		prefactor = (M_halo_mid/rho_background_matter) 
+		profile_func = (M_halo_mid/rho_background_matter) * y_halo_parameter2(k1,M_halo_mid,halo_stuff,spacing2)
+		#prefactor = (M_halo_mid/rho_background_matter) 
 	if index==2:
 		k1 = myTriangle.k3
-		profile_func = u_dust_halo_parameter(z,k1,M_halo_mid)
-		prefactor = dust_model_1(z,M_halo_mid)
-	I11dust = np.sum(prefactor * halo_stuff.dn_dm_array * halo_stuff.bias1_array * profile_func * delta_M_halo)
+		profile_func = dust_model_1(z,M_halo_mid) * u_dust_halo_parameter(z,k1,M_halo_mid)
+		#prefactor = dust_model_1(z,M_halo_mid)
+	I11dust = np.sum(halo_stuff.dn_dm_array * halo_stuff.bias1_array * profile_func * delta_M_halo)
 		#transformI11dust += prefactor * halo_stuff.dn_dm_array[i] * (bias_1 - halo_stuff.bias1_array[i] * profile_func) * delta_M_halo
 		#print (I11)
 	#return(bias_1 - transformI11dust)
@@ -259,18 +267,19 @@ def I_21_dust(z,myTriangle,halo_stuff,index):
 	epsilon = (M_halo_max/M_halo_min)**(1/n_halo_integral_step) - 1
 	delta_M_halo = M_halo_min* (M_halo_max/M_halo_min)**(spacing1/n_halo_integral_step)*epsilon
 	M_halo_mid = M_halo_min * (M_halo_max/M_halo_min)**(spacing1/n_halo_integral_step) * (1 + epsilon/2)
-	k1 = myTriangle.k1
-	profile_func = y_halo_parameter2(k1,M_halo_mid,halo_stuff,spacing2)
-	prefactor = (M_halo_mid/rho_background_matter) 
+	if index==0:
+		k1 = myTriangle.k1
+		profile_func = (M_halo_mid/rho_background_matter) * y_halo_parameter2(k1,M_halo_mid,halo_stuff,spacing2)
+		#prefactor = (M_halo_mid/rho_background_matter) 
 	if index==1:
 		k1 = myTriangle.k2
-		profile_func = y_halo_parameter2(k1,M_halo_mid,halo_stuff,spacing2)
-		prefactor = (M_halo_mid/rho_background_matter)
+		profile_func = (M_halo_mid/rho_background_matter) * y_halo_parameter2(k1,M_halo_mid,halo_stuff,spacing2)
+		#prefactor = (M_halo_mid/rho_background_matter)
 	if index==2:
 		k1 = myTriangle.k3
-		profile_func = u_dust_halo_parameter(z,k1,M_halo_mid)
-		prefactor = dust_model_1(z,M_halo_mid)
-	I21dust = np.sum(prefactor * halo_stuff.dn_dm_array * halo_stuff.bias2_array * profile_func * delta_M_halo)
+		profile_func = dust_model_1(z,M_halo_mid) * u_dust_halo_parameter(z,k1,M_halo_mid)
+		#prefactor = dust_model_1(z,M_halo_mid)
+	I21dust = np.sum(halo_stuff.dn_dm_array * halo_stuff.bias2_array * profile_func * delta_M_halo)
 		#print (I21)
 	#return(bias_2 - transformI21dust)
 	return(I21dust)
