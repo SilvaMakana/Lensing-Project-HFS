@@ -18,6 +18,8 @@ from global_variables import *
 #coordinate conversion for (x,y) --> (mu,nu)
 # x(mu,nu) = l_mag * cosh(mu) * cos(nu)
 # y(mu,nu) = l_mag * sinh(mu) * sin(nu)
+# mu_max = arcCosh(l_tripleprime_max/l_mag + cos(np.pi))
+# for l_tripleprime_max = 10000, mu_max = 3.63
 
 z_step = 4 #steps in redshift
 mu_step = 8 #steps in mu
