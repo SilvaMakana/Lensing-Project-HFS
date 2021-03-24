@@ -18,7 +18,7 @@ from global_variables import *
 #coordinate conversion for (x,y) --> (mu,nu)
 # x(mu,nu) = l_mag * cosh(mu) * cos(nu)
 # y(mu,nu) = l_mag * sinh(mu) * sin(nu)
-# mu_max = arcCosh(l_tripleprime_max/l_mag + cos(np.pi))
+# mu_max = arcCosh(2*l_tripleprime_max/l_mag + cos(0))
 # for l_tripleprime_max = 10000, mu_max = 3.63
 
 z_step = 4 #steps in redshift
@@ -49,11 +49,11 @@ def reduced_shear2(z_ini,mu_max,z_alpha,z_beta,l_mag,l_phi):
 			for k in range (nu_step):
 				nu_k = k*delta_nu
 				nu_mid = 1/2*(nu_k + (k+1)*delta_nu)
-				psi = np.arccos((-np.cosh(mu_mid) * np.cos(nu_mid) + 1)/(2*(np.cosh(mu_mid) - np.cos(nu_mid))))
-				my_tri = kTriangle(l_mag/D_mid,l_mag * (np.cosh(mu_mid) - np.cos(nu_mid))/D_mid,l_phi - (np.pi - psi))
+				psi = np.arccos((-np.cosh(mu_mid) * np.cos(nu_mid) + 1)/((np.cosh(mu_mid) - np.cos(nu_mid))))
+				my_tri = kTriangle(l_mag/D_mid,l_mag/2 * (np.cosh(mu_mid) - np.cos(nu_mid))/D_mid,l_phi - (np.pi - psi))
 				shear_ijk = factor * np.cos(2*l_phi - 2*(np.pi - psi))  * total_halo_dust_bispectrum(zmid,my_tri,halo_data)[0,0] * 1/(2*np.pi)**2 * 1/4 * l_mag**2 * np.abs((np.cosh(2 * mu_mid) - np.cos(2 * nu_mid))) * delta_z * delta_mu * delta_nu
 				#shear_ijk = factor * np.cos(2*l_phi - 2*(np.arccos((np.cosh(mu_mid) * np.cos(nu_mid) + 1)/(2*(np.cosh(mu_mid) - np.cos(nu_mid))))))  * total_halo_dust_bispectrum(zmid,kTriangle(l_mag/D_mid,l_mag * (np.cosh(mu_mid) - np.cos(nu_mid))/D_mid,l_phi - (np.arccos((np.cosh(mu_mid) * np.cos(nu_mid) + 1)/(2*(np.cosh(mu_mid) - np.cos(nu_mid)))))),halo_data)[0,0] * 1/(2*np.pi)**2 * 1/2 * l_mag**2 * (np.cosh(2 * mu_mid) - np.cos(2 * nu_mid)) * delta_z * delta_mu * delta_nu
 				shear += shear_ijk
-				print(i,j,k,zmid,mu_mid,nu_mid,shear_ijk)
+				print(i,j,k,zmid,mu_mid,nu_mid,psi,np.cos(2*l_phi - 2*(np.pi - psi)),my_tri.k1,my_tri.k2,my_tri.k3,shear_ijk)
 				#sys.stdout.flush()
 	return (shear)
