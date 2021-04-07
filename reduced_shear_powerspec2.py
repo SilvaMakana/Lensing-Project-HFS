@@ -21,10 +21,13 @@ from global_variables import *
 # mu_max = arcCosh(2*l_tripleprime_max/l_mag + cos(0))
 # for l_tripleprime_max = 10000, mu_max = 3.63
 
-z_step = 4 #steps in redshift
-mu_step = 8 #steps in mu
-nu_step = 8 #steps in nu
-def reduced_shear2(z_ini,mu_max,z_alpha,z_beta,l_mag,l_phi):
+#Wavelength input values
+#r-band (620 nm)*LSST and H-band (1580 nm)*Romans
+
+z_step = 8 #steps in redshift
+mu_step = 32 #steps in mu
+nu_step = 32 #steps in nu
+def reduced_shear2(wavelength_obs,z_ini,mu_max,z_alpha,z_beta,l_mag,l_phi):
 	sigma_galaxy = np.pi * r_virial**2
 	shear = 0
 	D_alpha = distance(z_ini,z_alpha)
@@ -38,7 +41,7 @@ def reduced_shear2(z_ini,mu_max,z_alpha,z_beta,l_mag,l_phi):
 		window_alpha = window_distance(D_mid,D_alpha)
 		window_beta = window_distance(D_mid,D_beta)
 		halo_data = halo_info(zmid,M_halo_min,M_halo_max,n_halo_integral_step)
-		factor = 2*window_alpha * window_beta * sigma_galaxy*numberdensity_galaxy*tau_g(zmid)*(1+zmid)**(2)*d_h/np.sqrt(Omega_r*(1+zmid)**4 + Omega_m*(1+zmid)**3 + Omega_k*(1+zmid)**2 + Omega_L) * (9*Omega_m**2*d_h**(-4))/(4 *1/(1+zmid)**2)
+		factor = 2*window_alpha * window_beta * sigma_galaxy*numberdensity_galaxy*tau_g(zmid,wavelength_obs)*(1+zmid)**(2)*d_h/np.sqrt(Omega_r*(1+zmid)**4 + Omega_m*(1+zmid)**3 + Omega_k*(1+zmid)**2 + Omega_L) * (9*Omega_m**2*d_h**(-4))/(4 *1/(1+zmid)**2)
 		#mu parameter integral from 0 to some max
 		delta_mu = (mu_max)/mu_step
 		for j in range (mu_step):
@@ -54,6 +57,6 @@ def reduced_shear2(z_ini,mu_max,z_alpha,z_beta,l_mag,l_phi):
 				shear_ijk = factor * np.cos(2*l_phi - 2*(np.pi - psi))  * total_halo_dust_bispectrum(zmid,my_tri,halo_data)[0,0] * 1/(2*np.pi)**2 * 1/4 * l_mag**2 * np.abs((np.cosh(2 * mu_mid) - np.cos(2 * nu_mid))) * delta_z * delta_mu * delta_nu
 				#shear_ijk = factor * np.cos(2*l_phi - 2*(np.arccos((np.cosh(mu_mid) * np.cos(nu_mid) + 1)/(2*(np.cosh(mu_mid) - np.cos(nu_mid))))))  * total_halo_dust_bispectrum(zmid,kTriangle(l_mag/D_mid,l_mag * (np.cosh(mu_mid) - np.cos(nu_mid))/D_mid,l_phi - (np.arccos((np.cosh(mu_mid) * np.cos(nu_mid) + 1)/(2*(np.cosh(mu_mid) - np.cos(nu_mid)))))),halo_data)[0,0] * 1/(2*np.pi)**2 * 1/2 * l_mag**2 * (np.cosh(2 * mu_mid) - np.cos(2 * nu_mid)) * delta_z * delta_mu * delta_nu
 				shear += shear_ijk
-				print(i,j,k,zmid,mu_mid,nu_mid,psi,np.cos(2*l_phi - 2*(np.pi - psi)),my_tri.k1,my_tri.k2,my_tri.k3,shear_ijk)
+				#print(i,j,k,shear_ijk)
 				#sys.stdout.flush()
 	return (shear)
