@@ -83,7 +83,7 @@ def alpha_parameter(stellarstuff,parameter_cutoff):
 #First model of the dust mass as a function of halo masses, redshift, and some parameters
 def dust_model_1(z,M_halo,parameter_cutoff):
 	stellar_info = parameters_stellarMvshaloM(z)
-	return(alpha_parameter(stellar_info,parameter_cutoff) * M_dust_optimistic(M_halo,stellar_info) *np.exp(M_halo/parameter_cutoff))
+	return(alpha_parameter(stellar_info,parameter_cutoff) * M_dust_optimistic(M_halo,stellar_info) *np.exp(-M_halo/parameter_cutoff))
 
 #Definition of the two halo amplitude, WORKS USING FOR LOOPS, log space for mass integration
 def two_halo_term_amplitude_def(z,M_halo_max,parameter_cutoff):
@@ -97,7 +97,7 @@ def two_halo_term_amplitude_def(z,M_halo_max,parameter_cutoff):
 
 #Root solver to find what parameter_cutoff is neededd
 def find_parameter_cutoff(z):
-	something = optimize.root_scalar(lambda parameter_cutoff: (two_halo_term_amplitude_measurement(z,0.177,1000) - two_halo_term_amplitude_def(z,10**20,parameter_cutoff)),bracket=[10**(-4),10**15],method ='brentq')
+	something = optimize.root_scalar(lambda parameter_cutoff: (two_halo_term_amplitude_measurement(z,0.177,1000) - two_halo_term_amplitude_def(z,10**16,parameter_cutoff)),bracket=[10**12,10**16],method ='brentq')
 	return something.root
 
 
