@@ -27,7 +27,7 @@ class kTriangle(object):
 		self.cos13 = (-self.k1**2 - self.k3**2 + self.k2**2)/(2*self.k1*self.k3)
 		self.cos23 = (-self.k2**2 - self.k3**2 + self.k1**2)/(2*self.k2*self.k3)
 
-		assert self.k1 + self.k2 > self.k3
+		assert self.k1 + self.k2 >= self.k3
 	"""output for SAS method, length of k1, length of k2, and cosine of angle between k1 and k2"""
 	def output_SAS(self):
 		return (self.k1,self.k2,self.cos12)
