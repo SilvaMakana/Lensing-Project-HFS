@@ -16,8 +16,8 @@ from halo_model_dust_bispec import *
 from global_variables import * 
 
 z_step = 4
-l_tripleprime_step = 64
-phi_step = 64
+l_tripleprime_step = 128
+phi_step = 128
 def reduced_shear1(z_ini,l_tripleprime_max,z_alpha,z_beta,l_mag,l_phi):
 	sigma_galaxy = np.pi * r_virial**2
 	shear = 0
