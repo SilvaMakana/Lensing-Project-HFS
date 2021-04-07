@@ -7,6 +7,7 @@ import pandas as pd
 from math import e
 from scipy.interpolate import interp2d, interp1d,InterpolatedUnivariateSpline,RectBivariateSpline
 from global_variables import * 
+import subprocess
 class PowerSpectrumSingleZ(object):
 	"""class to store a power spectrum at a single redshift, loaded from an input file, with input k range"""
 	def __init__(self,filename,log_k_array):
@@ -88,7 +89,7 @@ k_max = 210.674 #final k value in CLASS data files
 n_k = 625 #number of k values in CLASS files
 n_z = 31 #number of redshift values
 
-dir_base = "/Users/makanas/class_public-2.8.2/output/LENSING_PROJECT/"
+dir_base = subprocess.check_output('cat local.config', shell=True).strip()
 name_base = dir_base+"LENSING_PROJECT06_z"
 name_endNL = "_pk_nl.dat"
 name_endLin = "_pk.dat"
