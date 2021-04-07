@@ -18,3 +18,7 @@ def Menard_value(r_halo):
 	Menardvalue = np.sum(4.14*10**(-3) * 0.1**(0.84) * (r_halo_mid)**(-1.84) * r_halo_mid**2) * delta_r_halo
 	#return(Menardvalue)	
 	return(Gamma_num/(Gamma_denom*np.sqrt(np.pi))*4*np.pi*np.log(10)/(2.5*K_ext_V)*Menardvalue)
+
+
+##For a galaxy with 0.5*L_(Milky Way), you will have a central halo mass of 4.1*10^11 h^-1 Mpc, this leads
+## to a change in the quoted Menard value to 4.109*10^7 h^-1 Mpc
