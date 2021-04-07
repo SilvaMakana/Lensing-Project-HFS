@@ -5,6 +5,7 @@ from scipy import optimize
 import matplotlib.pyplot as plt
 import pandas as pd
 from math import e
+from scipy.special import sici
 from scipy.interpolate import interp2d, interp1d,InterpolatedUnivariateSpline,RectBivariateSpline
 from perturb_matter_bispec import *
 from CLASS_matter_powerspec import *
@@ -104,13 +105,22 @@ def halo_distribution_function(z,M):
 #		y_halo += r_halo_mid**2 * halo_stuff.rho_halo_array[g,i] * np.sin(k*r_halo_mid)/(k*r_halo_mid) *delta_r_halo
 #	return(1/M * 4 * np.pi * y_halo)
 
-def y_halo_parameter2(k,M,halo_stuff,g):
+"""def y_halo_parameter2(k,M,halo_stuff,g):
 	y_halo = 0
 	delta_r_halo = r_halo_virial(M)/n
 	r_halo_mid = np.linspace(0.5*delta_r_halo,(n-1/2)*delta_r_halo,n)
-	y_halo = np.sum(r_halo_mid**2 * halo_stuff.rho_halo_array[g,:].T * np.sin(k*r_halo_mid)/(k*r_halo_mid),axis=0) * delta_r_halo
-	return(1/M * 4 * np.pi * y_halo)
+	y_halo = np.sum(r_halo_mid * halo_stuff.rho_halo_array[g,:].T * np.sin(k*r_halo_mid),axis=0)/k * delta_r_halo
+	return(1/M * 4 * np.pi * y_halo)"""
 
+#Write integral in terms of the Si and Ci integrals
+def y_halo_parameter2(k,M,halo_stuff,g):
+	eta = k * halo_stuff.r_characteristic_array[g]
+	c_eta = k * r_halo_virial(M)
+	SiCi_term = np.subtract(sici((eta + c_eta)),sici(eta))
+	Si_term = SiCi_term[0]
+	Ci_term = SiCi_term[1]
+	factor = 1/(np.log(1+halo_stuff.c_concentration_array[g]) - halo_stuff.c_concentration_array[g]/(1 + halo_stuff.c_concentration_array[g]))
+	return(factor * (np.sin(eta) * Si_term + np.cos(eta) * Ci_term - np.sin(c_eta)/(eta + c_eta)))
 
 #halo bias parameters
 #bias parameter 1
