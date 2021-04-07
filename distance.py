@@ -20,11 +20,15 @@ def distance(z_ini,z_f):
 	return Chi
 
 ##Defining Window Function
+#def window_distance(distance2, distance1):
+#	if (distance1 >= distance2):
+#		return(1/distance2 - 1/distance1)
+#	else:
+#		return(0)
+
 def window_distance(distance2, distance1):
-	if (distance1 >= distance2):
-		return(1/distance2 - 1/distance1)
-	else:
-		return(0)
+	return(np.where(distance1 >= distance2,1/distance2 - 1/distance1,np.zeros_like(distance2)))
+
 
 #def window_distance(distance2, distance1):
 #	window = any(1/distance2 - 1/distance1)
