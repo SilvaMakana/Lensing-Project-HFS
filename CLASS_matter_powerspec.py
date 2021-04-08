@@ -90,7 +90,7 @@ n_k = 625 #number of k values in CLASS files
 n_z = 31 #number of redshift values
 
 dir_base = subprocess.check_output('cat local.config', shell=True).strip()
-name_base = dir_base+"LENSING_PROJECT06_z"
+name_base = str(dir_base)+"LENSING_PROJECT06_z"
 name_endNL = "_pk_nl.dat"
 name_endLin = "_pk.dat"
 
