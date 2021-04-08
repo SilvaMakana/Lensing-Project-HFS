@@ -22,3 +22,4 @@ def Menard_value(r_halo):
 
 ##For a galaxy with 0.5*L_(Milky Way), you will have a central halo mass of 4.1*10^11 h^-1 Mpc, this leads
 ## to a change in the quoted Menard value to 4.109*10^7 h^-1 Mpc
+##
