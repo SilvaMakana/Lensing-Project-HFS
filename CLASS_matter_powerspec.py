@@ -89,8 +89,11 @@ k_max = 210.674 #final k value in CLASS data files
 n_k = 625 #number of k values in CLASS files
 n_z = 31 #number of redshift values
 
-dir_base = subprocess.check_output('cat local.config', shell=True).strip()
-name_base = str(dir_base)+"LENSING_PROJECT06_z"
+#dir_base = "/Users/makanas/class_public-2.8.2/output/LENSING_PROJECT" #directory on home laptop where LENSING_PROJECT06_z... is located
+#dir_base = subprocess.check_output('cat local.config', shell=True).strip()
+with open('local.config', 'r') as file:
+	dir_base = file.read().replace('\n', '')
+name_base = dir_base+"LENSING_PROJECT06_z"
 name_endNL = "_pk_nl.dat"
 name_endLin = "_pk.dat"
 
