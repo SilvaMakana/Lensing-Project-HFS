@@ -126,14 +126,17 @@ for j in range (100):
 
 log_l_array = np.logspace(1,4,50)
 reduced_shear_value = np.zeros(50)
-subblock = int(sys.argv[1])
+subblock = int(sys.argv[1]) #which subblock to run for loop in supercomputer
+wavelength = float(sys.argv[2]) #in meters
+z_alpha = float(sys.argv[3])
+z_beta = float(sys.argv[4])
 #for j in range (50):
 #piecing apart for loop into blocks of 50/subblock for supercomputer
 for j in range(10*subblock,10*subblock+10):
-	reduced_shear_value[j] = reduced_shear2(1580*10**(-9),0,4.41,0.35,0.7,log_l_array[j],0)
+	reduced_shear_value[j] = reduced_shear2(wavelength,0,4.41,z_alpha,z_beta,log_l_array[j],0)
+	#reduced_shear_value[j] = reduced_shear2(1580*10**(-9),0,4.41,0.35,0.7,log_l_array[j],0)
 	#plt.scatter(log_l_array[j],reduced_shear_value)
 	print(log_l_array[j],reduced_shear_value[j])
-	
 	sys.stdout.flush()
 	#plt.loglog(log_l_array[j],reduced_shear(0,10000,1,1,log_l_array[j],0))
 #plt.loglog(log_l_array,log_l_array**3 * reduced_shear_value/(2 * np.pi**2))
