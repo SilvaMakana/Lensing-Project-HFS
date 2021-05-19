@@ -36,7 +36,7 @@ def Clz_iz_j(z_alpha,z_beta,l_mag):
 		D_mid = distance(0,zmid)
 		window_alpha = window_distance(D_mid,D_alpha)
 		window_beta = window_distance(D_mid,D_beta)
-		Clij += l_mag**4 * (window_alpha * window_beta)/(D_mid**2) * (3*Omega_m * d_h**(-2))/(2 *1/(1+zmid)) * PSetLin.P_interp(zmid,l_mag/D_mid)[0,0] * d_h/np.sqrt(Omega_r*(1+zmid)**4 + Omega_m*(1+zmid)**3 + Omega_k*(1+zmid)**2 + Omega_L) * delta_z
+		Clij += l_mag**4 * (window_alpha * window_beta)/(D_mid**2) * (9*Omega_m**2*d_h**(-4))/(4 *1/(1+zmid)**2) * PSetNL.P_interp(zmid,l_mag/D_mid)[0,0] * d_h/np.sqrt(Omega_r*(1+zmid)**4 + Omega_m*(1+zmid)**3 + Omega_k*(1+zmid)**2 + Omega_L) * delta_z
 	return(Clij)
 #print(Clz_iz_j(z_alpha,z_beta,l_mag))
 
