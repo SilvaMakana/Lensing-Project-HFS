@@ -13,16 +13,20 @@ from perturb_matter_bispec import *
 from CLASS_matter_powerspec import *
 from halo_model_bispec import *
 from halo_model_dust_bispec import *
+from halo_dust_model import *
 from global_variables import * 
 
 #coordinate conversion for (x,y) --> (mu,nu)
 # x(mu,nu) = l_mag * cosh(mu) * cos(nu)
 # y(mu,nu) = l_mag * sinh(mu) * sin(nu)
 # mu_max = arcCosh(2*l_tripleprime_max/l_mag + cos(0))
-# for l_tripleprime_max = 10000, mu_max = 3.63
+# for l_tripleprime_max = 10000, mu_max = 4.41
 
 #Wavelength input values
 #r-band (620 nm)*LSST and H-band (1580 nm)*Romans
+
+#Bin 1 & 3: z_alpha&z_beta = 0.35 & 0.7
+#Bin 2 & 4: z_alpha&z_beta = 0.5 & 0.95
 
 z_step = 8 #steps in redshift
 mu_step = 32 #steps in mu
@@ -41,7 +45,7 @@ def reduced_shear2(wavelength_obs,z_ini,mu_max,z_alpha,z_beta,l_mag,l_phi):
 		window_alpha = window_distance(D_mid,D_alpha)
 		window_beta = window_distance(D_mid,D_beta)
 		halo_data = halo_info(zmid,M_halo_min,M_halo_max,n_halo_integral_step)
-		factor = 2*window_alpha * window_beta * sigma_galaxy*numberdensity_galaxy*tau_g(zmid,wavelength_obs)*(1+zmid)**(2)*d_h/np.sqrt(Omega_r*(1+zmid)**4 + Omega_m*(1+zmid)**3 + Omega_k*(1+zmid)**2 + Omega_L) * (9*Omega_m**2*d_h**(-4))/(4 *1/(1+zmid)**2)
+		factor = 2*window_alpha * window_beta * dust_opacity(zmid,wavelength_obs)* conversion *rho_bar_dust(zmid)*(1+zmid)**(2)*d_h/np.sqrt(Omega_r*(1+zmid)**4 + Omega_m*(1+zmid)**3 + Omega_k*(1+zmid)**2 + Omega_L) * (9*Omega_m**2*d_h**(-4))/(4 *1/(1+zmid)**2)
 		#mu parameter integral from 0 to some max
 		delta_mu = (mu_max)/mu_step
 		for j in range (mu_step):
