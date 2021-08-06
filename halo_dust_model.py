@@ -26,6 +26,8 @@ dust_interp = interp1d(wavelength, extinction_per_H, kind='linear')
 def dust_opacity(z,wavelength_obs):
 	return(dust_interp(wavelength_obs*10**6/(1+z))/dust_mass_per_H)
 
+conversion = 1.989*10**33 * (3.086*10**24)**(-2) * h_cosmo
+
 #wavelength must be entered as meters
 def tau_meandust_halo(wavelength_obs,n,z_ini,z_f):
 	tau_dust = 0
